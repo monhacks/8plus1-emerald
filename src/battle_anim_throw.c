@@ -21,6 +21,7 @@
 #include "constants/moves.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
+#include "game_version.h"
 
 // iwram
 COMMON_DATA u32 gMonShrinkDuration = 0;
@@ -2240,7 +2241,7 @@ void TryShinyAnimation(u8 battler, struct Pokemon *mon)
     if (IsBattlerSpriteVisible(battler))
     {
         shinyValue = GET_SHINY_VALUE(otId, personality);
-        if (shinyValue < SHINY_ODDS)
+        if (shinyValue < SHINY_ODDS && !GameVersionObfuscated())
             isShiny = TRUE;
 
         if (isShiny)

@@ -51,6 +51,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
+#include "game_version.h"
 
 extern const u8 *const gBattleScriptsForMoveEffects[];
 
@@ -910,6 +911,18 @@ static const u8 sBattlePalaceNatureToFlavorTextId[NUM_NATURES] =
     [NATURE_SASSY]   = B_MSG_GROWL_DEEPLY,
     [NATURE_CAREFUL] = B_MSG_GROWL_DEEPLY,
     [NATURE_QUIRKY]  = B_MSG_EAGER_FOR_MORE,
+};
+
+const u16 sLevelCapFlags[NUM_LEVEL_CAPS] = {
+    FLAG_BADGE01_GET, FLAG_BADGE02_GET, FLAG_BADGE03_GET, FLAG_BADGE04_GET,
+    FLAG_BADGE05_GET, FLAG_BADGE06_GET, FLAG_BADGE07_GET, FLAG_BADGE08_GET,
+    FLAG_DEFEATED_ELITE_4_SIDNEY, FLAG_DEFEATED_ELITE_4_PHOEBE,
+    FLAG_DEFEATED_ELITE_4_GLACIA, FLAG_DEFEATED_ELITE_4_DRAKE,
+    FLAG_IS_CHAMPION,
+};
+
+const u16 sLevelCaps[NUM_LEVEL_CAPS] = {
+    80, 19, 24, 29, 31, 33, 42, 46, 49, 51, 53, 55, 58
 };
 
 static void Cmd_attackcanceler(void)
@@ -3252,6 +3265,20 @@ static void Cmd_jumpiftype(void)
         gBattlescriptCurrInstr += 7;
 }
 
+// Determine how much exp a pokemon should get based on the level cap
+static u16 LevelCapExp(u8 level, u16 exp) {
+    u8 i;
+    for (i=0; i < NUM_LEVEL_CAPS; ++i){
+        // Search the flags until we find the first un-set one
+        if (!FlagGet(sLevelCapFlags[i]))
+            // Check if we are at the level cap
+            if (level >= sLevelCaps[i])
+                return 1;
+            break;
+    }
+    return exp;
+}
+
 static void Cmd_getexp(void)
 {
     u16 item;
@@ -3260,6 +3287,7 @@ static void Cmd_getexp(void)
     s32 sentIn;
     s32 viaExpShare = 0;
     u16 *exp = &gBattleStruct->expValue;
+    u8 level;
 
     gBattlerFainted = GetBattlerForBattleScript(gBattlescriptCurrInstr[1]);
     sentIn = gSentPokesToOpponent[(gBattlerFainted & 2) >> 1];
@@ -3336,6 +3364,7 @@ static void Cmd_getexp(void)
         if (gBattleControllerExecFlags == 0)
         {
             item = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HELD_ITEM);
+            level = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_LEVEL);
 
             if (item == ITEM_ENIGMA_BERRY)
                 holdEffect = gSaveBlock1Ptr->enigmaBerry.holdEffect;
@@ -3348,7 +3377,7 @@ static void Cmd_getexp(void)
                 gBattleScripting.getexpState = 5;
                 gBattleMoveDamage = 0; // used for exp
             }
-            else if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_LEVEL) == MAX_LEVEL)
+            else if (level == MAX_LEVEL)
             {
                 *(&gBattleStruct->sentInPokes) >>= 1;
                 gBattleScripting.getexpState = 5;
@@ -3367,11 +3396,11 @@ static void Cmd_getexp(void)
                 if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HP))
                 {
                     if (gBattleStruct->sentInPokes & 1)
-                        gBattleMoveDamage = *exp;
+                        gBattleMoveDamage = LevelCapExp(level, *exp);
                     else
                         gBattleMoveDamage = 0;
 
-                    if (holdEffect == HOLD_EFFECT_EXP_SHARE)
+                    if (holdEffect == HOLD_EFFECT_EXP_SHARE && LevelCapExp(level, *exp) > 1)
                         gBattleMoveDamage += gExpShareExp;
                     if (holdEffect == HOLD_EFFECT_LUCKY_EGG)
                         gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
@@ -10054,7 +10083,7 @@ static void Cmd_trysetcaughtmondexflags(void)
 
 static void Cmd_displaydexinfo(void)
 {
-    u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
+    u16 species = ObfuscateSpecies(GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL));
 
     switch (gBattleCommunication[0])
     {

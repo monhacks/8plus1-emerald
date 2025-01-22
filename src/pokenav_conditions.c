@@ -12,6 +12,7 @@
 #include "strings.h"
 #include "text.h"
 #include "constants/songs.h"
+#include "game_version.h"
 
 #define CONDITION_MONS_LOADED 3
 
@@ -531,7 +532,7 @@ static void ConditionGraphDrawMonPic(s16 listId, u8 loadId)
 
     boxId = monListPtr->monData[listId].boxId;
     monId = monListPtr->monData[listId].monId;
-    species = GetBoxOrPartyMonData(boxId, monId, MON_DATA_SPECIES_OR_EGG, NULL);
+    species = ObfuscateSpecies(GetBoxOrPartyMonData(boxId, monId, MON_DATA_SPECIES_OR_EGG, NULL));
     tid = GetBoxOrPartyMonData(boxId, monId, MON_DATA_OT_ID, NULL);
     personality = GetBoxOrPartyMonData(boxId, monId, MON_DATA_PERSONALITY, NULL);
     LoadSpecialPokePic(&gMonFrontPicTable[species], menu->monPicGfx[loadId], species, personality, TRUE);

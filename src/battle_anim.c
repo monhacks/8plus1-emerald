@@ -17,6 +17,7 @@
 #include "sprite.h"
 #include "task.h"
 #include "constants/battle_anim.h"
+#include "game_version.h"
 
 /*
     This file handles the commands for the macros defined in
@@ -202,7 +203,7 @@ void DoMoveAnim(u16 move)
 {
     gBattleAnimAttacker = gBattlerAttacker;
     gBattleAnimTarget = gBattlerTarget;
-    LaunchBattleAnimation(gBattleAnims_Moves, move, TRUE);
+    LaunchBattleAnimation(gBattleAnims_Moves, ObfuscateMove(move), TRUE);
 }
 
 void LaunchBattleAnimation(const u8 *const animsTable[], u16 tableId, bool8 isMoveAnim)
@@ -216,9 +217,9 @@ void LaunchBattleAnimation(const u8 *const animsTable[], u16 tableId, bool8 isMo
         for (i = 0; i < MAX_BATTLERS_COUNT; i++)
         {
             if (GetBattlerSide(i) != B_SIDE_PLAYER)
-                gAnimBattlerSpecies[i] = GetMonData(&gEnemyParty[gBattlerPartyIndexes[i]], MON_DATA_SPECIES);
+                gAnimBattlerSpecies[i] = ObfuscateSpecies(GetMonData(&gEnemyParty[gBattlerPartyIndexes[i]], MON_DATA_SPECIES));
             else
-                gAnimBattlerSpecies[i] = GetMonData(&gPlayerParty[gBattlerPartyIndexes[i]], MON_DATA_SPECIES);
+                gAnimBattlerSpecies[i] = ObfuscateSpecies(GetMonData(&gPlayerParty[gBattlerPartyIndexes[i]], MON_DATA_SPECIES));
         }
     }
     else

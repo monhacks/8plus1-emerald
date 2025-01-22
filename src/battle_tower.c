@@ -36,6 +36,7 @@
 #include "constants/trainers.h"
 #include "constants/event_objects.h"
 #include "constants/moves.h"
+#include "game_version.h"
 
 extern const u8 MossdeepCity_SpaceCenter_2F_EventScript_MaxieTrainer[];
 extern const u8 MossdeepCity_SpaceCenter_2F_EventScript_TabithaTrainer[];
@@ -2446,7 +2447,7 @@ static void GetPotentialPartnerMoveAndSpecies(u16 trainerId, u16 monId)
         }
     }
 
-    StringCopy(gStringVar1, gMoveNames[move]);
+    StringCopy(gStringVar1, ObfuscateMoveName(move));
     StringCopy(gStringVar2, gSpeciesNames[species]);
 }
 

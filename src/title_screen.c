@@ -22,6 +22,7 @@
 #include "graphics.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "game_version.h"
 
 enum {
     TAG_VERSION = 1000,
@@ -64,8 +65,6 @@ static const u32 sTitleScreenRayquazaGfx[] = INCBIN_U32("graphics/title_screen/r
 static const u32 sTitleScreenRayquazaTilemap[] = INCBIN_U32("graphics/title_screen/rayquaza.bin.lz");
 static const u32 sTitleScreenLogoShineGfx[] = INCBIN_U32("graphics/title_screen/logo_shine.4bpp.lz");
 static const u32 sTitleScreenCloudsGfx[] = INCBIN_U32("graphics/title_screen/clouds.4bpp.lz");
-
-
 
 // Used to blend "Emerald Version" as it passes over over the Pokémon banner.
 // Also used by the intro to blend the Game Freak name/logo in and out as they appear and disappear
@@ -184,14 +183,28 @@ static const struct SpriteTemplate sVersionBannerRightSpriteTemplate =
     .callback = SpriteCB_VersionBannerRight,
 };
 
-static const struct CompressedSpriteSheet sSpriteSheet_EmeraldVersion[] =
+static const struct CompressedSpriteSheet sSpriteSheet_Version[] =
 {
     {
-        .data = gTitleScreenEmeraldVersionGfx,
+        .data = gTitleScreenEmeraldVersion1Gfx,
         .size = 0x1000,
         .tag = TAG_VERSION
     },
-    {},
+    {
+        .data = gTitleScreenEmeraldVersion2Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
+    {
+        .data = gTitleScreenEmeraldVersion3Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
+    {
+        .data = gTitleScreenEmeraldVersion4Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
 };
 
 static const struct OamData sOamData_CopyrightBanner =
@@ -610,7 +623,7 @@ void CB2_InitTitleScreen(void)
         ResetSpriteData();
         FreeAllSpritePalettes();
         gReservedSpritePaletteCount = 9;
-        LoadCompressedSpriteSheet(&sSpriteSheet_EmeraldVersion[0]);
+        LoadCompressedSpriteSheet(&sSpriteSheet_Version[gGameSubVersion]);
         LoadCompressedSpriteSheet(&sSpriteSheet_PressStart[0]);
         LoadCompressedSpriteSheet(&sPokemonLogoShineSpriteSheet[0]);
         LoadPalette(gTitleScreenEmeraldVersionPal, OBJ_PLTT_ID(0), PLTT_SIZE_4BPP);
@@ -784,6 +797,23 @@ static void Task_TitleScreenPhase3(u8 taskId)
         FadeOutBGM(4);
         BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_WHITEALPHA);
         SetMainCallback2(CB2_GoToMainMenu);
+    }
+    // Increment/Decrement the version
+    else if (JOY_NEW(L_BUTTON))
+    {
+        // Decrement the version and update the graphics
+        gGameSubVersion = (gGameSubVersion - 1 + RELAY_VERSION_AMOUNT) % RELAY_VERSION_AMOUNT;
+        LoadCompressedSpriteSheet(&sSpriteSheet_Version[gGameSubVersion]);
+        SetMainCallback2(CB2_InitTitleScreen);
+
+    }
+    else if (JOY_NEW(R_BUTTON))
+    {
+        // Increment the version and update the graphics
+        gGameSubVersion = (gGameSubVersion + 1) % RELAY_VERSION_AMOUNT;
+        LoadCompressedSpriteSheet(&sSpriteSheet_Version[gGameSubVersion]);
+        SetMainCallback2(CB2_InitTitleScreen);
+
     }
     else if (JOY_HELD(CLEAR_SAVE_BUTTON_COMBO) == CLEAR_SAVE_BUTTON_COMBO)
     {

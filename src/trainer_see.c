@@ -18,6 +18,7 @@
 #include "constants/event_object_movement.h"
 #include "constants/field_effects.h"
 #include "constants/trainer_types.h"
+#include "game_version.h"
 
 // this file's functions
 static u8 CheckTrainer(u8 objectEventId);
@@ -326,6 +327,9 @@ static u8 GetTrainerApproachDistance(struct ObjectEvent *trainerObj)
 // Returns how far south the player is from trainer. 0 if out of trainer's sight.
 static u8 GetTrainerApproachDistanceSouth(struct ObjectEvent *trainerObj, s16 range, s16 x, s16 y)
 {
+    if(GameVersionRude())
+        range = MAX_SPINNER_VISION_RANGE;
+
     if (trainerObj->currentCoords.x == x
      && y > trainerObj->currentCoords.y
      && y <= trainerObj->currentCoords.y + range)
@@ -337,6 +341,9 @@ static u8 GetTrainerApproachDistanceSouth(struct ObjectEvent *trainerObj, s16 ra
 // Returns how far north the player is from trainer. 0 if out of trainer's sight.
 static u8 GetTrainerApproachDistanceNorth(struct ObjectEvent *trainerObj, s16 range, s16 x, s16 y)
 {
+    if(GameVersionRude())
+        range = MAX_SPINNER_VISION_RANGE;
+        
     if (trainerObj->currentCoords.x == x
      && y < trainerObj->currentCoords.y
      && y >= trainerObj->currentCoords.y - range)
@@ -348,6 +355,9 @@ static u8 GetTrainerApproachDistanceNorth(struct ObjectEvent *trainerObj, s16 ra
 // Returns how far west the player is from trainer. 0 if out of trainer's sight.
 static u8 GetTrainerApproachDistanceWest(struct ObjectEvent *trainerObj, s16 range, s16 x, s16 y)
 {
+    if(GameVersionRude())
+        range = MAX_SPINNER_VISION_RANGE;
+
     if (trainerObj->currentCoords.y == y
      && x < trainerObj->currentCoords.x
      && x >= trainerObj->currentCoords.x - range)
@@ -359,6 +369,9 @@ static u8 GetTrainerApproachDistanceWest(struct ObjectEvent *trainerObj, s16 ran
 // Returns how far east the player is from trainer. 0 if out of trainer's sight.
 static u8 GetTrainerApproachDistanceEast(struct ObjectEvent *trainerObj, s16 range, s16 x, s16 y)
 {
+    if(GameVersionRude())
+        range = MAX_SPINNER_VISION_RANGE;
+
     if (trainerObj->currentCoords.y == y
      && x > trainerObj->currentCoords.x
      && x <= trainerObj->currentCoords.x + range)
@@ -384,8 +397,9 @@ static u8 CheckPathBetweenTrainerAndPlayer(struct ObjectEvent *trainerObj, u8 ap
     for (i = 0; i < approachDistance - 1; i++, MoveCoords(direction, &x, &y))
     {
         // Check for collisions on approach, ignoring the "out of range" collision for regular movement
+        // Rude Traines will ignore any obstacles between them and you :3
         collision = GetCollisionFlagsAtCoords(trainerObj, x, y, direction);
-        if (collision != 0 && (collision & ~(1 << (COLLISION_OUTSIDE_RANGE - 1))))
+        if (!GameVersionRude() && collision != 0 && (collision & ~(1 << (COLLISION_OUTSIDE_RANGE - 1))))
             return 0;
     }
 
@@ -398,7 +412,9 @@ static u8 CheckPathBetweenTrainerAndPlayer(struct ObjectEvent *trainerObj, u8 ap
 
     trainerObj->rangeX = rangeX;
     trainerObj->rangeY = rangeY;
-    if (collision == COLLISION_OBJECT_EVENT)
+
+    // Rude trainers ignore collision
+    if (collision == COLLISION_OBJECT_EVENT || GameVersionRude())
         return approachDistance;
 
     return 0;

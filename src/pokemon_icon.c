@@ -5,6 +5,7 @@
 #include "pokemon_icon.h"
 #include "sprite.h"
 #include "constants/pokemon_icon.h"
+#include "game_version.h"
 
 #define INVALID_ICON_SPECIES SPECIES_OLD_UNOWN_J // Oddly specific, used when an icon should be a ?. Any of the 'old unown' would work
 
@@ -1035,7 +1036,7 @@ u8 CreateMonIcon(u16 species, void (*callback)(struct Sprite *), s16 x, s16 y, u
         .anims = sMonIconAnims,
         .affineAnims = sMonIconAffineAnims,
         .callback = callback,
-        .paletteTag = POKE_ICON_BASE_PAL_TAG + gMonIconPaletteIndices[species],
+        .paletteTag = POKE_ICON_BASE_PAL_TAG + gMonIconPaletteIndices[ObfuscateSpecies(species)],
     };
 
     if (species > NUM_SPECIES)
@@ -1058,7 +1059,7 @@ u8 CreateMonIconNoPersonality(u16 species, void (*callback)(struct Sprite *), s1
         .anims = sMonIconAnims,
         .affineAnims = sMonIconAffineAnims,
         .callback = callback,
-        .paletteTag = POKE_ICON_BASE_PAL_TAG + gMonIconPaletteIndices[species],
+        .paletteTag = POKE_ICON_BASE_PAL_TAG + gMonIconPaletteIndices[ObfuscateSpecies(species)],
     };
 
     iconTemplate.image = GetMonIconTiles(species, handleDeoxys);
@@ -1144,14 +1145,14 @@ void SafeLoadMonIconPalette(u16 species)
     u8 palIndex;
     if (species > NUM_SPECIES)
         species = INVALID_ICON_SPECIES;
-    palIndex = gMonIconPaletteIndices[species];
+    palIndex = gMonIconPaletteIndices[ObfuscateSpecies(species)];
     if (IndexOfSpritePaletteTag(gMonIconPaletteTable[palIndex].tag) == 0xFF)
         LoadSpritePalette(&gMonIconPaletteTable[palIndex]);
 }
 
 void LoadMonIconPalette(u16 species)
 {
-    u8 palIndex = gMonIconPaletteIndices[species];
+    u8 palIndex = gMonIconPaletteIndices[ObfuscateSpecies(species)];
     if (IndexOfSpritePaletteTag(gMonIconPaletteTable[palIndex].tag) == 0xFF)
         LoadSpritePalette(&gMonIconPaletteTable[palIndex]);
 }
@@ -1169,14 +1170,14 @@ void SafeFreeMonIconPalette(u16 species)
     u8 palIndex;
     if (species > NUM_SPECIES)
         species = INVALID_ICON_SPECIES;
-    palIndex = gMonIconPaletteIndices[species];
+    palIndex = gMonIconPaletteIndices[ObfuscateSpecies(species)];
     FreeSpritePaletteByTag(gMonIconPaletteTable[palIndex].tag);
 }
 
 void FreeMonIconPalette(u16 species)
 {
     u8 palIndex;
-    palIndex = gMonIconPaletteIndices[species];
+    palIndex = gMonIconPaletteIndices[ObfuscateSpecies(species)];
     FreeSpritePaletteByTag(gMonIconPaletteTable[palIndex].tag);
 }
 
@@ -1187,7 +1188,7 @@ void SpriteCB_MonIcon(struct Sprite *sprite)
 
 const u8 *GetMonIconTiles(u16 species, bool32 handleDeoxys)
 {
-    const u8 *iconSprite = gMonIconTable[species];
+    const u8 *iconSprite = gMonIconTable[ObfuscateSpecies(species)];
     if (species == SPECIES_DEOXYS && handleDeoxys == TRUE)
     {
         iconSprite = (const u8 *)(0x400 + (u32)iconSprite); // use the specific Deoxys form icon (Speed in this case)
@@ -1212,19 +1213,19 @@ u8 GetValidMonIconPalIndex(u16 species)
 {
     if (species > NUM_SPECIES)
         species = INVALID_ICON_SPECIES;
-    return gMonIconPaletteIndices[species];
+    return gMonIconPaletteIndices[ObfuscateSpecies(species)];
 }
 
 u8 GetMonIconPaletteIndexFromSpecies(u16 species)
 {
-    return gMonIconPaletteIndices[species];
+    return gMonIconPaletteIndices[ObfuscateSpecies(species)];
 }
 
 const u16 *GetValidMonIconPalettePtr(u16 species)
 {
     if (species > NUM_SPECIES)
         species = INVALID_ICON_SPECIES;
-    return gMonIconPaletteTable[gMonIconPaletteIndices[species]].data;
+    return gMonIconPaletteTable[gMonIconPaletteIndices[ObfuscateSpecies(species)]].data;
 }
 
 u8 UpdateMonIconFrame(struct Sprite *sprite)

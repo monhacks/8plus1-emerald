@@ -35,6 +35,7 @@
 #include "constants/songs.h"
 #include "constants/species.h"
 #include "constants/weather.h"
+#include "game_version.h"
 
 /*
 NOTE: The data and functions in this file up until (but not including) sSoundMovesTable
@@ -3920,32 +3921,36 @@ u8 IsMonDisobedient(void)
 
     if (IsBattlerModernFatefulEncounter(gBattlerAttacker)) // only false if illegal Mew or Deoxys
     {
-        if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER && GetBattlerPosition(gBattlerAttacker) == 2)
-            return 0;
         if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER)
             return 0;
         if (gBattleTypeFlags & BATTLE_TYPE_RECORDED)
             return 0;
-        if (!IsOtherTrainer(gBattleMons[gBattlerAttacker].otId, gBattleMons[gBattlerAttacker].otName))
-            return 0;
-        if (FlagGet(FLAG_BADGE08_GET))
-            return 0;
 
-        obedienceLevel = 10;
+        // If we are in Hidden Power Mode, the pokemon will always disobey and use hidden power instead
+        if (!GameVersionHiddenPower()) {
+            if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER && GetBattlerPosition(gBattlerAttacker) == 2)
+                return 0;
+            if (!IsOtherTrainer(gBattleMons[gBattlerAttacker].otId, gBattleMons[gBattlerAttacker].otName))
+                return 0;
+            if (FlagGet(FLAG_BADGE08_GET))
+                return 0;
 
-        if (FlagGet(FLAG_BADGE02_GET))
-            obedienceLevel = 30;
-        if (FlagGet(FLAG_BADGE04_GET))
-            obedienceLevel = 50;
-        if (FlagGet(FLAG_BADGE06_GET))
-            obedienceLevel = 70;
+            obedienceLevel = 10;
+
+            if (FlagGet(FLAG_BADGE02_GET))
+                obedienceLevel = 30;
+            if (FlagGet(FLAG_BADGE04_GET))
+                obedienceLevel = 50;
+            if (FlagGet(FLAG_BADGE06_GET))
+                obedienceLevel = 70;
+        }
     }
 
     if (gBattleMons[gBattlerAttacker].level <= obedienceLevel)
         return 0;
     rnd = (Random() & 255);
     calc = (gBattleMons[gBattlerAttacker].level + obedienceLevel) * rnd >> 8;
-    if (calc < obedienceLevel)
+    if (calc < obedienceLevel && !GameVersionHiddenPower())
         return 0;
 
     // is not obedient
@@ -3955,6 +3960,19 @@ u8 IsMonDisobedient(void)
     {
         gBattlescriptCurrInstr = BattleScript_IgnoresWhileAsleep;
         return 1;
+    }
+
+    if (GameVersionHiddenPower()) {
+        // Execute Hidden Power instead of whatever other move
+        // Note: by not adjusting gCurrMovePos it should hopefully still deduct Move PP
+        if (gCurrentMove == MOVE_HIDDEN_POWER)
+            return 0;
+
+        gCalledMove = MOVE_HIDDEN_POWER;
+        gBattlescriptCurrInstr = BattleScript_IgnoresAndUsesRandomMove;
+        gBattlerTarget = GetMoveTarget(gCalledMove, NO_TARGET_OVERRIDE);
+        gHitMarker |= HITMARKER_DISOBEDIENT_MOVE;
+        return 2;
     }
 
     rnd = (Random() & 255);

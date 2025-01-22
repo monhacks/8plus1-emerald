@@ -57,8 +57,8 @@ PetalburgCity_PokemonCenter_1F_EventScript_SayMudkipType::
 PetalburgCity_PokemonCenter_1F_Text_PCStorageSystem:
 	.string "That PC-based POKéMON Storage\n"
 	.string "System…\p"
-	.string "Whoever made it must be some kind\n"
-	.string "of a scientific wizard!$"
+	.string "Whoever made it must be really\n"
+	.string "bad at coding!$"
 
 PetalburgCity_PokemonCenter_1F_Text_OranBerryRegainedHP:
 	.string "When my POKéMON ate an\n"

@@ -25,6 +25,7 @@
 #include "constants/songs.h"
 #include "constants/rgb.h"
 #include "constants/battle_palace.h"
+#include "game_version.h"
 
 extern const u8 gBattlePalaceNatureToMoveTarget[];
 extern const u8 * const gBattleAnims_General[];
@@ -586,7 +587,7 @@ void BattleLoadOpponentMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
 
     if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies == SPECIES_NONE)
     {
-        species = GetMonData(mon, MON_DATA_SPECIES);
+        species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES));
         currentPersonality = monsPersonality;
     }
     else
@@ -639,7 +640,7 @@ void BattleLoadPlayerMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
 
     if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies == SPECIES_NONE)
     {
-        species = GetMonData(mon, MON_DATA_SPECIES);
+        species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES));
         currentPersonality = monsPersonality;
     }
     else
@@ -968,9 +969,9 @@ void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 castform)
             position = GetBattlerPosition(battlerAtk);
 
             if (GetBattlerSide(battlerDef) == B_SIDE_OPPONENT)
-                targetSpecies = GetMonData(&gEnemyParty[gBattlerPartyIndexes[battlerDef]], MON_DATA_SPECIES);
+                targetSpecies = ObfuscateSpecies(GetMonData(&gEnemyParty[gBattlerPartyIndexes[battlerDef]], MON_DATA_SPECIES));
             else
-                targetSpecies = GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerDef]], MON_DATA_SPECIES);
+                targetSpecies = ObfuscateSpecies(GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerDef]], MON_DATA_SPECIES));
 
             if (GetBattlerSide(battlerAtk) == B_SIDE_PLAYER)
             {

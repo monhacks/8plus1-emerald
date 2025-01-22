@@ -3818,6 +3818,8 @@ extern const u32 gItemIcon_SilphScope[];
 extern const u32 gItemIconPalette_SilphScope[];
 extern const u32 gItemIcon_Bicycle[];
 extern const u32 gItemIconPalette_Bicycle[];
+extern const u32 gItemIcon_Tent[];
+extern const u32 gItemIconPalette_Tent[];
 extern const u32 gItemIcon_TownMap[];
 extern const u32 gItemIconPalette_TownMap[];
 extern const u32 gItemIcon_VSSeeker[];
@@ -4111,7 +4113,10 @@ extern const u16 gBattlePyramidFloor_Pal[][16];
 
 extern const u16 gStandardMenuPalette[];
 
-extern const u32 gTitleScreenEmeraldVersionGfx[];
+extern const u32 gTitleScreenEmeraldVersion1Gfx[];
+extern const u32 gTitleScreenEmeraldVersion2Gfx[];
+extern const u32 gTitleScreenEmeraldVersion3Gfx[];
+extern const u32 gTitleScreenEmeraldVersion4Gfx[];
 extern const u32 gTitleScreenPressStartGfx[];
 extern const u32 gTitleScreenPokemonLogoGfx[];
 extern const u32 gTitleScreenPokemonLogoTilemap[];
@@ -4119,6 +4124,7 @@ extern const u32 gTitleScreenCloudsTilemap[];
 extern const u16 gTitleScreenBgPalettes[];
 extern const u16 gTitleScreenPressStartPal[];
 extern const u16 gTitleScreenEmeraldVersionPal[];
+
 
 // Battle Dome
 extern const u32 gDomeTourneyInfoCard_Gfx[];

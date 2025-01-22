@@ -240,7 +240,7 @@
 #define EVO_FRIENDSHIP_NIGHT 3  // Pokémon levels up at night with friendship ≥ 220
 #define EVO_LEVEL            4  // Pokémon reaches the specified level
 #define EVO_TRADE            5  // Pokémon is traded
-#define EVO_TRADE_ITEM       6  // Pokémon is traded while it's holding the specified item
+#define EVO_LEVEL_ITEM       6  // Pokémon is leveled while it's holding the specified item
 #define EVO_ITEM             7  // specified item is used on Pokémon
 #define EVO_LEVEL_ATK_GT_DEF 8  // Pokémon reaches the specified level with attack > defense
 #define EVO_LEVEL_ATK_EQ_DEF 9  // Pokémon reaches the specified level with attack = defense

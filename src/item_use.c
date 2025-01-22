@@ -41,6 +41,7 @@
 #include "constants/item_effects.h"
 #include "constants/items.h"
 #include "constants/songs.h"
+#include "game_version.h"
 
 static void SetUpItemUseCallback(u8);
 static void FieldCB_UseItemOnField(void);
@@ -60,6 +61,7 @@ static void ItemUseOnFieldCB_Itemfinder(u8);
 static void ItemUseOnFieldCB_Berry(u8);
 static void ItemUseOnFieldCB_WailmerPailBerry(u8);
 static void ItemUseOnFieldCB_WailmerPailSudowoodo(u8);
+static void ItemUseOnFieldCB_Tent(u8);
 static bool8 TryToWaterSudowoodo(void);
 static void BootUpSoundTMHM(u8);
 static void Task_ShowTMHMContainedMessage(u8);
@@ -750,6 +752,29 @@ static void ItemUseOnFieldCB_WailmerPailSudowoodo(u8 taskId)
     DestroyTask(taskId);
 }
 
+void ItemUseOutOfBattle_Tent(u8 taskId)
+{
+    if (!GameVersionRude())
+    {
+        sItemUseOnFieldCB = ItemUseOnFieldCB_Tent;
+        SetUpItemUseOnFieldCallback(taskId);
+    }
+    else
+    {
+        DisplayDadsAdviceCannotUseItemMessage(taskId, gTasks[taskId].tUsingRegisteredKeyItem);
+    }
+}
+
+static void ItemUseOnFieldCB_Tent(u8 taskId)
+{
+    ScriptUnfreezeObjectEvents();
+    LockPlayerFieldControls();
+    ScriptContext_SetupScript(Common_EventScript_OutOfCenterPartyHeal);
+    ScriptUnfreezeObjectEvents();
+    UnlockPlayerFieldControls();
+    DestroyTask(taskId);
+}
+
 void ItemUseOutOfBattle_Medicine(u8 taskId)
 {
     gItemUseCB = ItemUseCB_Medicine;
@@ -804,7 +829,7 @@ static void Task_ShowTMHMContainedMessage(u8 taskId)
 {
     if (JOY_NEW(A_BUTTON | B_BUTTON))
     {
-        StringCopy(gStringVar1, gMoveNames[ItemIdToBattleMoveId(gSpecialVar_ItemId)]);
+        StringCopy(gStringVar1, ObfuscateMoveName(ItemIdToBattleMoveId(gSpecialVar_ItemId)));
         StringExpandPlaceholders(gStringVar4, gText_TMHMContainedVar1);
         DisplayItemMessage(taskId, FONT_NORMAL, gStringVar4, UseTMHMYesNo);
     }

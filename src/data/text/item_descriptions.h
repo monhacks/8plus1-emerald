@@ -276,10 +276,20 @@ static const u8 sCalciumDesc[] = _(
     "SP. ATK stat of one\n"
     "POKéMON.");
 
-static const u8 sRareCandyDesc[] = _(
+// Romhack Items
+static const u8 sTentDesc[] = _(
+    "Rest your tired\n"
+    "POKéMON on the go.");
+
+static const u8 sRareCandiesDesc[] = _(
     "Raises the level\n"
     "of a POKéMON by\n"
-    "one.");
+    "one. ");
+
+static const u8 sRareCandyDesc[] = _(
+    "Maximize the hidden\n"
+    "potential of a\n"
+    "POKéMON.");
 
 static const u8 sPPUpDesc[] = _(
     "Raises the maximum\n"

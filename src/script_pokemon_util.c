@@ -23,6 +23,7 @@
 #include "tv.h"
 #include "constants/items.h"
 #include "constants/battle_frontier.h"
+#include "game_version.h"
 
 static void CB2_ReturnFromChooseHalfParty(void);
 static void CB2_ReturnFromChooseBattleFrontierParty(void);
@@ -32,14 +33,19 @@ void HealPlayerParty(void)
     u8 i, j;
     u8 ppBonuses;
     u8 arg[4];
+    u32 status = ShouldApplyStatusOnHeal(gMapHeader.regionMapSectionId);
 
-    // restore HP.
     for(i = 0; i < gPlayerPartyCount; i++)
     {
-        u16 maxHP = GetMonData(&gPlayerParty[i], MON_DATA_MAX_HP);
-        arg[0] = maxHP;
-        arg[1] = maxHP >> 8;
-        SetMonData(&gPlayerParty[i], MON_DATA_HP, arg);
+        *(u32*)arg = 0; // 0 out the previous statuses
+        if (!GameVersionRude()) 
+        {
+            // restore hp.
+            u16 maxHP = GetMonData(&gPlayerParty[i], MON_DATA_MAX_HP);
+            arg[0] = maxHP;
+            arg[1] = maxHP >> 8;
+            SetMonData(&gPlayerParty[i], MON_DATA_HP, arg);
+        }
         ppBonuses = GetMonData(&gPlayerParty[i], MON_DATA_PP_BONUSES);
 
         // restore PP.
@@ -49,11 +55,9 @@ void HealPlayerParty(void)
             SetMonData(&gPlayerParty[i], MON_DATA_PP1 + j, arg);
         }
 
-        // since status is u32, the four 0 assignments here are probably for safety to prevent undefined data from reaching SetMonData.
-        arg[0] = 0;
-        arg[1] = 0;
-        arg[2] = 0;
-        arg[3] = 0;
+        // Roll 1/Status Chance and apply the status if it's 0.
+        // the status field is u32, so pack the 4 byte arg with the correct status
+        *(u32*)arg = (Random() % RUDE_STATUS_CHANCE_ON_HEAL)? STATUS1_NONE: status;
         SetMonData(&gPlayerParty[i], MON_DATA_STATUS, arg);
     }
 }

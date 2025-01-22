@@ -46,6 +46,7 @@
 #include "constants/battle_frontier.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "game_version.h"
 
 // Menu actions
 enum
@@ -265,6 +266,21 @@ static void CB2_SaveAfterLinkBattle(void);
 static void ShowSaveInfoWindow(void);
 static void RemoveSaveInfoWindow(void);
 static void HideStartMenuWindow(void);
+
+// Speedchoice port: save spinner timers when start menu is opened
+//   Note: I think this patches the menu open speedrun trick.
+extern struct MapObjectTimerBackup gMapObjectTimerBackup[MAX_SPRITES];
+void DoMapObjectTimerBackup(void)
+{
+    u8 i;
+
+    for(i = 0; i < MAX_SPRITES; i++)
+    {
+        gMapObjectTimerBackup[i].backedUp = TRUE;
+        gMapObjectTimerBackup[i].spriteId = gSprites[i].data[0];
+        gMapObjectTimerBackup[i].timer = gSprites[i].data[3];
+    }
+}
 
 void SetDexPokemonPokenavFlags(void) // unused
 {

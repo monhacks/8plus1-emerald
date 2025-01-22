@@ -21,6 +21,7 @@
 #include "constants/items.h"
 #include "constants/layouts.h"
 #include "constants/weather.h"
+#include "game_version.h"
 
 extern const u8 EventScript_RepelWoreOff[];
 
@@ -379,6 +380,8 @@ static u8 PickWildMonNature(void)
 static void CreateWildMon(u16 species, u8 level)
 {
     bool32 checkCuteCharm;
+
+    species = ReplaceWildMonSpecies(species, GetCurrentMapWildMonHeaderId());
 
     ZeroEnemyPartyMons();
     checkCuteCharm = TRUE;

@@ -47,6 +47,7 @@
 #include "constants/songs.h"
 #include "constants/trainers.h"
 #include "constants/union_room.h"
+#include "game_version.h"
 
 #define DAY_EVO_HOUR_BEGIN       12
 #define DAY_EVO_HOUR_END         HOURS_PER_DAY
@@ -2247,7 +2248,7 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     checksum = CalculateBoxMonChecksum(boxMon);
     SetBoxMonData(boxMon, MON_DATA_CHECKSUM, &checksum);
     EncryptBoxMon(boxMon);
-    GetSpeciesName(speciesName, species);
+    GetSpeciesName(speciesName, ObfuscateSpecies(species));
     SetBoxMonData(boxMon, MON_DATA_NICKNAME, speciesName);
     SetBoxMonData(boxMon, MON_DATA_LANGUAGE, &gGameLanguage);
     SetBoxMonData(boxMon, MON_DATA_OT_NAME, gSaveBlock2Ptr->playerName);
@@ -2264,12 +2265,11 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
 
     if (fixedIV < USE_RANDOM_IVS)
     {
-        SetBoxMonData(boxMon, MON_DATA_HP_IV, &fixedIV);
-        SetBoxMonData(boxMon, MON_DATA_ATK_IV, &fixedIV);
-        SetBoxMonData(boxMon, MON_DATA_DEF_IV, &fixedIV);
-        SetBoxMonData(boxMon, MON_DATA_SPEED_IV, &fixedIV);
-        SetBoxMonData(boxMon, MON_DATA_SPATK_IV, &fixedIV);
-        SetBoxMonData(boxMon, MON_DATA_SPDEF_IV, &fixedIV);
+        u8 iv_type = MON_DATA_HP_IV;
+        do {
+            u8 swizzledIV = SwizzleIV(fixedIV, iv_type);
+            SetBoxMonData(boxMon, iv_type, &swizzledIV);
+        } while (iv_type++ < MON_DATA_SPDEF_IV);
     }
     else
     {
@@ -2305,12 +2305,22 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
 void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 nature)
 {
     u32 personality;
+    u32 shinyTries = 0;
+    u32 playerOtid = gSaveBlock2Ptr->playerTrainerId[0]
+                    | (gSaveBlock2Ptr->playerTrainerId[1] << 8)
+                    | (gSaveBlock2Ptr->playerTrainerId[2] << 16)
+                    | (gSaveBlock2Ptr->playerTrainerId[3] << 24);
 
     do
     {
-        personality = Random32();
-    }
-    while (nature != GetNatureFromPersonality(personality));
+        do
+        {
+            personality = Random32();
+        }
+        while (nature != GetNatureFromPersonality(personality));
+
+    // Obfuscated game mode gets extra shiny odds (they cant see it)
+    } while (GameVersionObfuscated() && !IsShinyOtIdPersonality(playerOtid, personality) && shinyTries++ < OBFUSCATED_SHINY_RETRIES);
 
     CreateMon(mon, species, level, fixedIV, TRUE, personality, OT_ID_PLAYER_ID, 0);
 }
@@ -3004,7 +3014,12 @@ void GiveBoxMonInitialMoveset(struct BoxPokemon *boxMon)
         if (moveLevel > (level << 9))
             break;
 
-        move = (gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID);
+        if (GameVersionHiddenPower())
+            // Mons can only learn hidden power
+            move = MOVE_HIDDEN_POWER;
+        else
+            // Replace level up moves with randomized ones
+            move = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
 
         if (GiveMoveToBoxMon(boxMon, move) == MON_HAS_MAX_MOVES)
             DeleteFirstMoveAndGiveMoveToBoxMon(boxMon, move);
@@ -3035,7 +3050,11 @@ u16 MonTryLearningNewMove(struct Pokemon *mon, bool8 firstMove)
 
     if ((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_LV) == (level << 9))
     {
-        gMoveToLearn = (gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_ID);
+        // If there is a level up move, replace it as appropriate
+        if (GameVersionHiddenPower())
+            gMoveToLearn = MOVE_HIDDEN_POWER;
+        else
+            gMoveToLearn = ReplaceLevelUpMove((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_ID), species);
         sLearningMoveTableID++;
         retVal = GiveMoveToMon(mon, gMoveToLearn);
     }
@@ -4724,6 +4743,24 @@ bool8 ExecuteTableBasedItemEffect(struct Pokemon *mon, u16 item, u8 partyIndex, 
     }                                                                                                   \
 }
 
+// Maximize a pokemon's hidden power iv bits
+// returns true/false indicating if any changes were actually made
+bool8 MaximizeHiddenPowerIVBits(struct Pokemon *mon) {
+    bool8 changed = FALSE;
+    u8 iv, value;
+    
+    for (iv = MON_DATA_HP_IV; iv <= MON_DATA_SPDEF_IV; ++iv){
+        value = GetMonData(mon, iv, NULL);
+        if (!(value & 2)) { // Check if hp power bit of iv is not maximized
+            changed = TRUE;
+            value |= 2; // set the bit
+            SetMonData(mon, iv, &value);
+        }
+    }
+
+    return changed;
+}
+
 // Returns TRUE if the item has no effect on the Pokémon, FALSE otherwise
 bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 moveIndex, bool8 usedByAI)
 {
@@ -4890,13 +4927,21 @@ bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 mov
             }
 
             // Rare Candy
-            if ((itemEffect[i] & ITEM3_LEVEL_UP)
-             && GetMonData(mon, MON_DATA_LEVEL, NULL) != MAX_LEVEL)
+            if ((itemEffect[i] & ITEM3_LEVEL_UP))
             {
-                dataUnsigned = gExperienceTables[gSpeciesInfo[GetMonData(mon, MON_DATA_SPECIES, NULL)].growthRate][GetMonData(mon, MON_DATA_LEVEL, NULL) + 1];
-                SetMonData(mon, MON_DATA_EXP, &dataUnsigned);
-                CalculateMonStats(mon);
-                retVal = FALSE;
+                if (item == ITEM_RARE_CANDIES && GetMonData(mon, MON_DATA_LEVEL, NULL) != MAX_LEVEL)
+                {
+                    dataUnsigned = gExperienceTables[gSpeciesInfo[GetMonData(mon, MON_DATA_SPECIES, NULL)].growthRate][GetMonData(mon, MON_DATA_LEVEL, NULL) + 1];
+                    SetMonData(mon, MON_DATA_EXP, &dataUnsigned);
+                    CalculateMonStats(mon);
+                    retVal = FALSE;
+                }
+                // Try to maximize the pokemon's hidden power bp bits
+                else if (MaximizeHiddenPowerIVBits(mon))
+                {
+                    CalculateMonStats(mon);
+                    retVal = FALSE;
+                }
             }
 
             // Cure status
@@ -5554,6 +5599,14 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 mode, u16 evolutionItem)
                 if (gEvolutionTable[species][i].param <= beauty)
                     targetSpecies = gEvolutionTable[species][i].targetSpecies;
                 break;
+            case EVO_LEVEL_ITEM: // Evolve Trade w Item pokemon if they level up while holding the item 
+                if (gEvolutionTable[species][i].param == heldItem)
+                {
+                    heldItem = ITEM_NONE;
+                    SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem);
+                    targetSpecies = gEvolutionTable[species][i].targetSpecies;
+                }
+                break;
             }
         }
         break;
@@ -5564,14 +5617,6 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 mode, u16 evolutionItem)
             {
             case EVO_TRADE:
                 targetSpecies = gEvolutionTable[species][i].targetSpecies;
-                break;
-            case EVO_TRADE_ITEM:
-                if (gEvolutionTable[species][i].param == heldItem)
-                {
-                    heldItem = ITEM_NONE;
-                    SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem);
-                    targetSpecies = gEvolutionTable[species][i].targetSpecies;
-                }
                 break;
             }
         }
@@ -6304,7 +6349,7 @@ u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves)
                     ;
 
                 if (k == numMoves)
-                    moves[numMoves++] = gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID;
+                    moves[numMoves++] = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
             }
         }
     }
@@ -6318,7 +6363,7 @@ u8 GetLevelUpMovesBySpecies(u16 species, u16 *moves)
     int i;
 
     for (i = 0; i < MAX_LEVEL_UP_MOVES && gLevelUpLearnsets[species][i] != LEVEL_UP_END; i++)
-         moves[numMoves++] = gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID;
+         moves[numMoves++] = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
 
      return numMoves;
 }
@@ -6358,7 +6403,7 @@ u8 GetNumberOfRelearnableMoves(struct Pokemon *mon)
                     ;
 
                 if (k == numMoves)
-                    moves[numMoves++] = gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID;
+                    moves[numMoves++] = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
             }
         }
     }
@@ -6505,7 +6550,7 @@ static void Task_PlayMapChosenOrBattleBGM(u8 taskId)
 
 const u32 *GetMonFrontSpritePal(struct Pokemon *mon)
 {
-    u16 species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0);
+    u16 species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0));
     u32 otId = GetMonData(mon, MON_DATA_OT_ID, 0);
     u32 personality = GetMonData(mon, MON_DATA_PERSONALITY, 0);
     return GetMonSpritePalFromSpeciesAndPersonality(species, otId, personality);
@@ -6519,7 +6564,7 @@ const u32 *GetMonSpritePalFromSpeciesAndPersonality(u16 species, u32 otId, u32 p
         return gMonPaletteTable[SPECIES_NONE].data;
 
     shinyValue = GET_SHINY_VALUE(otId, personality);
-    if (shinyValue < SHINY_ODDS)
+    if (shinyValue < SHINY_ODDS && !GameVersionObfuscated())
         return gMonShinyPaletteTable[species].data;
     else
         return gMonPaletteTable[species].data;
@@ -6527,7 +6572,7 @@ const u32 *GetMonSpritePalFromSpeciesAndPersonality(u16 species, u32 otId, u32 p
 
 const struct CompressedSpritePalette *GetMonSpritePalStruct(struct Pokemon *mon)
 {
-    u16 species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0);
+    u16 species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES_OR_EGG, 0));
     u32 otId = GetMonData(mon, MON_DATA_OT_ID, 0);
     u32 personality = GetMonData(mon, MON_DATA_PERSONALITY, 0);
     return GetMonSpritePalStructFromOtIdPersonality(species, otId, personality);
@@ -6538,7 +6583,7 @@ const struct CompressedSpritePalette *GetMonSpritePalStructFromOtIdPersonality(u
     u32 shinyValue;
 
     shinyValue = GET_SHINY_VALUE(otId, personality);
-    if (shinyValue < SHINY_ODDS)
+    if (shinyValue < SHINY_ODDS && !GameVersionObfuscated())
         return &gMonShinyPaletteTable[species];
     else
         return &gMonPaletteTable[species];

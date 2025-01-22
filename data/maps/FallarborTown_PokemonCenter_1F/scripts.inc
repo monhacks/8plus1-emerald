@@ -98,6 +98,8 @@ FallarborTown_PokemonCenter_1F_Text_LanetteGreeting:
 	.string "Oh, I'm sorry. I'm LANETTE.\p"
 	.string "Honestly, I'm glad to meet you--it's\n"
 	.string "great you're using the Storage System.\p"
+	.string "I'm sorry it keeps freezing up,\n"
+	.string "I'll fix it soon, i promise.\p"
 	.string "If you could, please visit me at home.\n"
 	.string "My house is on ROUTE 114.$"
 

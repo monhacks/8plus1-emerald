@@ -114,7 +114,7 @@ const u32 *const gItemIconTable[ITEMS_COUNT + 1][2] =
     [ITEM_063] = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     [ITEM_064] = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     [ITEM_065] = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
-    [ITEM_066] = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
+    [ITEM_RARE_CANDIES] = {gItemIcon_RareCandy, gItemIconPalette_RareCandy},
     // Valuables
     [ITEM_TINY_MUSHROOM] = {gItemIcon_TinyMushroom, gItemIconPalette_Mushroom},
     [ITEM_BIG_MUSHROOM] = {gItemIcon_BigMushroom, gItemIconPalette_Mushroom},
@@ -369,7 +369,7 @@ const u32 *const gItemIconTable[ITEMS_COUNT + 1][2] =
     [ITEM_HM07] = {gItemIcon_HM, gItemIconPalette_WaterTMHM},
     [ITEM_HM08] = {gItemIcon_HM, gItemIconPalette_WaterTMHM},
     // ????????
-    [ITEM_15B] = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
+    [ITEM_TENT] = {gItemIcon_Tent, gItemIconPalette_Tent},
     [ITEM_15C] = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     // FireRed/LeafGreen key items
     [ITEM_OAKS_PARCEL] = {gItemIcon_OaksParcel, gItemIconPalette_OaksParcel},

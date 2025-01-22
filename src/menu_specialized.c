@@ -25,6 +25,7 @@
 #include "window.h"
 #include "constants/songs.h"
 #include "gba/io_reg.h"
+#include "game_version.h"
 
 extern const struct CompressedSpriteSheet gMonFrontPicTable[];
 
@@ -755,6 +756,7 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
     const struct BattleMove *move;
     u8 buffer[32];
     const u8 *str;
+    bool8 isSilly = IsMoveSilly(chosenMove);
 
     FillWindowPixelBuffer(RELEARNERWIN_DESC_BATTLE, PIXEL_FILL(1));
     str = gText_MoveRelearnerBattleMoves;
@@ -777,6 +779,7 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
         CopyWindowToVram(RELEARNERWIN_DESC_BATTLE, COPYWIN_GFX);
         return;
     }
+    chosenMove = ObfuscateMove(chosenMove);
     move = &gBattleMoves[chosenMove];
     str = gTypeNames[move->type];
     AddTextPrinterParameterized(RELEARNERWIN_DESC_BATTLE, FONT_NORMAL, str, 4, 25, TEXT_SKIP_DRAW, NULL);
@@ -785,7 +788,7 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
     ConvertIntToDecimalStringN(buffer, move->pp, STR_CONV_MODE_LEFT_ALIGN, 2);
     AddTextPrinterParameterized(RELEARNERWIN_DESC_BATTLE, FONT_NORMAL, buffer, x, 41, TEXT_SKIP_DRAW, NULL);
 
-    if (move->power < 2)
+    if (move->power < 2 || isSilly)
     {
         str = gText_ThreeDashes;
     }
@@ -796,7 +799,7 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
     }
     AddTextPrinterParameterized(RELEARNERWIN_DESC_BATTLE, FONT_NORMAL, str, 106, 25, TEXT_SKIP_DRAW, NULL);
 
-    if (move->accuracy == 0)
+    if (move->accuracy == 0 || isSilly)
     {
         str = gText_ThreeDashes;
     }
@@ -807,7 +810,10 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
     }
     AddTextPrinterParameterized(RELEARNERWIN_DESC_BATTLE, FONT_NORMAL, str, 106, 41, TEXT_SKIP_DRAW, NULL);
 
-    str = gMoveDescriptionPointers[chosenMove - 1];
+    if (isSilly)
+        str = sFakeMoveDescription;
+    else
+        str = gMoveDescriptionPointers[chosenMove - 1];
     AddTextPrinterParameterized(RELEARNERWIN_DESC_BATTLE, FONT_NARROW, str, 0, 65, 0, NULL);
 }
 
@@ -837,7 +843,7 @@ static void MoveRelearnerMenuLoadContestMoveDescription(u32 chosenMove)
         return;
     }
 
-    move = &gContestMoves[chosenMove];
+    move = &gContestMoves[ObfuscateMove(chosenMove)];
     str = gContestMoveTypeTextPointers[move->contestCategory];
     AddTextPrinterParameterized(RELEARNERWIN_DESC_CONTEST, FONT_NORMAL, str, 4, 25, TEXT_SKIP_DRAW, NULL);
 
@@ -1071,7 +1077,7 @@ void GetConditionMenuMonGfx(void *tilesDst, void *palDst, u16 boxId, u16 monId, 
 
     if (partyId != numMons)
     {
-        u16 species = GetBoxOrPartyMonData(boxId, monId, MON_DATA_SPECIES_OR_EGG, NULL);
+        u16 species = ObfuscateSpecies(GetBoxOrPartyMonData(boxId, monId, MON_DATA_SPECIES_OR_EGG, NULL));
         u32 trainerId = GetBoxOrPartyMonData(boxId, monId, MON_DATA_OT_ID, NULL);
         u32 personality = GetBoxOrPartyMonData(boxId, monId, MON_DATA_PERSONALITY, NULL);
 

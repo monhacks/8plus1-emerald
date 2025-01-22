@@ -45,6 +45,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "contest.h"
+#include "game_version.h"
 
 enum {
     SLIDING_TEXT_OFFSCREEN,
@@ -890,7 +891,7 @@ static void Task_ShowWinnerMonBanner(u8 taskId)
         gBattle_WIN0V = WIN_RANGE(DISPLAY_HEIGHT / 2, DISPLAY_HEIGHT / 2);
 
         GET_CONTEST_WINNER_ID(i);
-        species = gContestMons[i].species;
+        species = ObfuscateSpecies(gContestMons[i].species);
         personality = gContestMons[i].personality;
         otId = gContestMons[i].otId;
         if (i == gContestPlayerMonIndex)
@@ -2583,7 +2584,7 @@ void ShowContestEntryMonPic(void)
         AllocateMonSpritesGfx();
         left = 10;
         top = 3;
-        species = gContestMons[gSpecialVar_0x8006].species;
+        species = ObfuscateSpecies(gContestMons[gSpecialVar_0x8006].species);
         personality = gContestMons[gSpecialVar_0x8006].personality;
         otId = gContestMons[gSpecialVar_0x8006].otId;
         taskId = CreateTask(Task_ShowContestEntryMonPic, 0x50);

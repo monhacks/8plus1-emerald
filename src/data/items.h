@@ -859,7 +859,7 @@ const struct Item gItems[] =
 
     [ITEM_RARE_CANDY] =
     {
-        .name = _("RARE CANDY"),
+        .name = _("RAREST CANDY"),
         .itemId = ITEM_RARE_CANDY,
         .price = 4800,
         .description = sRareCandyDesc,
@@ -1258,15 +1258,18 @@ const struct Item gItems[] =
         .fieldUseFunc = ItemUseOutOfBattle_CannotUse,
     },
 
-    [ITEM_066] =
+    // Romhack Specific Item (Reusable Candy)
+    [ITEM_RARE_CANDIES] =
     {
-        .name = _("????????"),
-        .itemId = ITEM_NONE,
+        .name = _("RARE CANDIES"),
+        .itemId = ITEM_RARE_CANDIES,
         .price = 0,
-        .description = sDummyDesc,
-        .pocket = POCKET_ITEMS,
-        .type = ITEM_USE_BAG_MENU,
-        .fieldUseFunc = ItemUseOutOfBattle_CannotUse,
+        .description = sRareCandiesDesc,
+        .importance = 1,
+        .registrability = FALSE,
+        .pocket = POCKET_KEY_ITEMS,
+        .type = ITEM_USE_PARTY_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_RareCandy,
     },
 
 // Valuable items
@@ -4159,15 +4162,18 @@ const struct Item gItems[] =
         .fieldUseFunc = ItemUseOutOfBattle_TMHM,
     },
 
-    [ITEM_15B] =
+    // Romhack Specific Item (Tent)
+    [ITEM_TENT] =
     {
-        .name = _("????????"),
-        .itemId = ITEM_NONE,
+        .name = _("TENT"),
+        .itemId = ITEM_TENT,
         .price = 0,
-        .description = sDummyDesc,
-        .pocket = POCKET_ITEMS,
-        .type = ITEM_USE_BAG_MENU,
-        .fieldUseFunc = ItemUseOutOfBattle_CannotUse,
+        .description = sTentDesc,
+        .importance = 1,
+        .registrability = TRUE,
+        .pocket = POCKET_KEY_ITEMS,
+        .type = ITEM_USE_FIELD,
+        .fieldUseFunc = ItemUseOutOfBattle_Tent,
     },
 
     [ITEM_15C] =

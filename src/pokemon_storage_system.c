@@ -41,6 +41,9 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/pokemon_icon.h"
+#include "constants/region_map_sections.h"
+#include "game_version.h"
+#include "random.h"
 
 /*
     NOTE: This file is large. Some general groups of functions have
@@ -6354,8 +6357,17 @@ static void SetMovingMonData(u8 boxId, u8 position)
 {
     if (boxId == TOTAL_BOXES_COUNT)
         sStorage->movingMon = gPlayerParty[sCursorPosition];
-    else
+    else {
         BoxMonAtToMon(boxId, position, &sStorage->movingMon);
+        
+        // When retrieving a pokemon from a box, make sure its not healthy
+        if (GameVersionRude()) {
+            u32 status = (Random() % RUDE_STATUS_CHANCE_ON_HEAL)? 0 : ShouldApplyStatusOnHeal(MAPSEC_NONE);
+            u16 hp = 1;
+            SetMonData(&sStorage->movingMon, MON_DATA_STATUS, &status);
+            SetMonData(&sStorage->movingMon, MON_DATA_HP, &hp);
+        }
+    }
 
     PurgeMonOrBoxMon(boxId, position);
     sMovingMonOrigBoxId = boxId;
@@ -6864,7 +6876,7 @@ static void SetDisplayMonData(void *pokemon, u8 mode)
     {
         struct Pokemon *mon = (struct Pokemon *)pokemon;
 
-        sStorage->displayMonSpecies = GetMonData(mon, MON_DATA_SPECIES_OR_EGG);
+        sStorage->displayMonSpecies = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES_OR_EGG));
         if (sStorage->displayMonSpecies != SPECIES_NONE)
         {
             sanityIsBadEgg = GetMonData(mon, MON_DATA_SANITY_IS_BAD_EGG);
@@ -6887,7 +6899,7 @@ static void SetDisplayMonData(void *pokemon, u8 mode)
     {
         struct BoxPokemon *boxMon = (struct BoxPokemon *)pokemon;
 
-        sStorage->displayMonSpecies = GetBoxMonData(pokemon, MON_DATA_SPECIES_OR_EGG);
+        sStorage->displayMonSpecies = ObfuscateSpecies(GetBoxMonData(pokemon, MON_DATA_SPECIES_OR_EGG));
         if (sStorage->displayMonSpecies != SPECIES_NONE)
         {
             u32 otId = GetBoxMonData(boxMon, MON_DATA_OT_ID);

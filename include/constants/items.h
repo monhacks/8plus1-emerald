@@ -113,7 +113,7 @@
 #define ITEM_063 99
 #define ITEM_064 100
 #define ITEM_065 101
-#define ITEM_066 102
+#define ITEM_RARE_CANDIES 102
 
 // Unusable
 #define ITEM_TINY_MUSHROOM 103
@@ -382,7 +382,7 @@
 #define ITEM_HM08 346
 
 // Unknown
-#define ITEM_15B 347
+#define ITEM_TENT 347
 #define ITEM_15C 348
 
 // FireRed/LeafGreen

@@ -8,6 +8,7 @@
 #include "data.h"
 #include "pokemon.h"
 #include "constants/trainers.h"
+#include "game_version.h"
 
 #define PICS_COUNT 8
 
@@ -205,6 +206,8 @@ u16 CreateMonPicSprite_Affine(u16 species, u32 otId, u32 personality, u8 flags, 
     u8 spriteId;
     u8 type;
 
+    species = ObfuscateSpecies(species);
+
     for (i = 0; i < PICS_COUNT; i++)
     {
         if (!sSpritePics[i].active)
@@ -365,7 +368,7 @@ static u16 UNUSED LoadTrainerPicInWindow(u16 species, bool8 isFrontPic, u8 palet
 
 u16 CreateTrainerCardTrainerPicSprite(u16 species, bool8 isFrontPic, u16 destX, u16 destY, u8 paletteSlot, u8 windowId)
 {
-    return CreateTrainerCardSprite(species, 0, 0, isFrontPic, destX, destY, paletteSlot, windowId, TRUE);
+    return CreateTrainerCardSprite(ObfuscateSpecies(species), 0, 0, isFrontPic, destX, destY, paletteSlot, windowId, TRUE);
 }
 
 u16 PlayerGenderToFrontTrainerPicId_Debug(u8 gender, bool8 getClass)

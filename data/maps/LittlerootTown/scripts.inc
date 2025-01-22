@@ -904,6 +904,9 @@ LittlerootTown_EventScript_GiveRunningShoes::
 	waitfanfare
 	setflag FLAG_RECEIVED_RUNNING_SHOES
 	msgbox LittlerootTown_Text_ExplainRunningShoes, MSGBOX_DEFAULT
+	msgbox LittlerootTown_Text_GiveTent, MSGBOX_DEFAULT
+	giveitem ITEM_TENT
+	msgbox LittlerootTown_Text_TentExplanation, MSGBOX_DEFAULT
 	msgbox LittlerootTown_Text_ComeHomeIfAnythingHappens, MSGBOX_DEFAULT
 	closemessage
 	delay 30
@@ -946,6 +949,15 @@ LittlerootTown_Text_ExplainRunningShoes:
 	.string "RUNNING SHOES to run extra-fast!\p"
 	.string "“Slip on these RUNNING SHOES and race\n"
 	.string "in the great outdoors!”$"
+
+LittlerootTown_Text_GiveTent:
+	.string "Mom: Please, take this too!$"
+
+LittlerootTown_Text_TentExplanation:
+	.string "Mom: Your dad left one of his old\n"
+	.string "camping tents in storage.\p"
+	.string "You should be able to use it to\n"
+	.string "rest your POKéMON while travelling.$"
 
 LittlerootTown_Text_ComeHomeIfAnythingHappens:
 	.string "… … … … … … … …\n"

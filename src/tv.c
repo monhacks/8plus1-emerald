@@ -4353,6 +4353,7 @@ static void DoTVShowBravoTrainerPokemonProfile(void)
             sTVShowState = 7;
         break;
     case 6:
+        // Leaving the tv un-obfuscated, its a good way to figure out information.
         StringCopy(gStringVar1, gSpeciesNames[show->bravoTrainer.species]);
         StringCopy(gStringVar2, gMoveNames[show->bravoTrainer.move]);
         CopyEasyChatWord(gStringVar3, show->bravoTrainer.words[1]);

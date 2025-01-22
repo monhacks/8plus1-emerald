@@ -50,6 +50,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/union_room.h"
+#include "game_version.h"
 
 // IDs for RunTradeMenuCallback
 enum {
@@ -2803,7 +2804,7 @@ static void LoadTradeMonPic(u8 whichParty, u8 state)
     switch (state)
     {
     case 0:
-        species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG);
+        species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES_OR_EGG));
         personality = GetMonData(mon, MON_DATA_PERSONALITY);
 
         if (whichParty == TRADE_PLAYER)
@@ -3804,7 +3805,7 @@ static bool8 DoTradeAnim_Cable(void)
     case STATE_POKEBALL_ARRIVE_WAIT:
         if (gSprites[sTradeAnim->bouncingPokeballSpriteId].callback == SpriteCallbackDummy)
         {
-            HandleLoadSpecialPokePic_2(&gMonFrontPicTable[sTradeAnim->monSpecies[TRADE_PARTNER]],
+            HandleLoadSpecialPokePic_2(&gMonFrontPicTable[ObfuscateSpecies(sTradeAnim->monSpecies[TRADE_PARTNER])],
                                         gMonSpritesGfxPtr->sprites.ptr[B_POSITION_OPPONENT_RIGHT],
                                         sTradeAnim->monSpecies[TRADE_PARTNER],
                                         sTradeAnim->monPersonalities[TRADE_PARTNER]);
@@ -4301,7 +4302,7 @@ static bool8 DoTradeAnim_Wireless(void)
     case STATE_POKEBALL_ARRIVE_WAIT:
         if (gSprites[sTradeAnim->bouncingPokeballSpriteId].callback == SpriteCallbackDummy)
         {
-            HandleLoadSpecialPokePic_2(&gMonFrontPicTable[sTradeAnim->monSpecies[TRADE_PARTNER]],
+            HandleLoadSpecialPokePic_2(&gMonFrontPicTable[ObfuscateSpecies(sTradeAnim->monSpecies[TRADE_PARTNER])],
                                         gMonSpritesGfxPtr->sprites.ptr[B_POSITION_OPPONENT_RIGHT],
                                         sTradeAnim->monSpecies[TRADE_PARTNER],
                                         sTradeAnim->monPersonalities[TRADE_PARTNER]);

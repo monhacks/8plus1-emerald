@@ -25,6 +25,7 @@
 #include "trig.h"
 #include "util.h"
 #include "constants/rgb.h"
+#include "game_version.h"
 
 enum {
     ANIMDATA_ROT_IDX,
@@ -725,14 +726,14 @@ static bool8 LoadMonAndSceneGfx(struct Pokemon *mon)
     {
     case 0:
         // Load mon gfx
-        species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG);
+        species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES_OR_EGG));
         personality = GetMonData(mon, MON_DATA_PERSONALITY);
         HandleLoadSpecialPokePic_2(&gMonFrontPicTable[species], gMonSpritesGfxPtr->sprites.ptr[B_POSITION_OPPONENT_LEFT], species, personality);
         sPokeblockFeed->loadGfxState++;
         break;
     case 1:
         // Load mon palette
-        species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG);
+        species = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES_OR_EGG));
         personality = GetMonData(mon, MON_DATA_PERSONALITY);
         trainerId = GetMonData(mon, MON_DATA_OT_ID);
         palette = GetMonSpritePalStructFromOtIdPersonality(species, trainerId, personality);

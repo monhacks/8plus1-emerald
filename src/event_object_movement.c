@@ -29,6 +29,7 @@
 #include "constants/mauville_old_man.h"
 #include "constants/trainer_types.h"
 #include "constants/union_room.h"
+#include "game_version.h"
 
 // this file was known as evobjmv.c in Game Freak's original source
 
@@ -165,6 +166,8 @@ static void DestroyLevitateMovementTask(u8);
 static bool8 NpcTakeStep(struct Sprite *);
 static bool8 IsElevationMismatchAt(u8, s16, s16);
 static bool8 AreElevationsCompatible(u8, u8);
+
+static u8 GetRandomFacingDirection(u8* directions, u8 numChoices);
 
 static const struct SpriteFrameImage sPicTable_PechaBerryTree[];
 
@@ -1289,7 +1292,13 @@ static u8 InitObjectEventStateFromTemplate(const struct ObjectEventTemplate *tem
     objectEvent->active = TRUE;
     objectEvent->triggerGroundEffectsOnMove = TRUE;
     objectEvent->graphicsId = template->graphicsId;
-    objectEvent->movementType = template->movementType;
+
+    // Ported modifications to this method from speedchoice (should make every trainer a very aggressive spinner)
+    if(GameVersionRude() && gPlayerAvatar.objectEventId != objectEventId && (template->trainerType == 1 || template->trainerType == 3))
+        objectEvent->movementType = 1;
+    else
+        objectEvent->movementType = template->movementType;
+
     objectEvent->localId = template->localId;
     objectEvent->mapNum = mapNum;
     objectEvent->mapGroup = mapGroup;
@@ -1303,9 +1312,19 @@ static u8 InitObjectEventStateFromTemplate(const struct ObjectEventTemplate *tem
     objectEvent->previousElevation = template->elevation;
     objectEvent->rangeX = template->movementRangeX;
     objectEvent->rangeY = template->movementRangeY;
-    objectEvent->trainerType = template->trainerType;
+
+	if(GameVersionRude() && gPlayerAvatar.objectEventId != objectEventId && (template->trainerType == 1 || template->trainerType == 3))
+        objectEvent->trainerType = 1;
+    else
+        objectEvent->trainerType = template->trainerType;
+
     objectEvent->mapNum = mapNum;
-    objectEvent->trainerRange_berryTreeId = template->trainerRange_berryTreeId;
+
+    if(GameVersionRude() && gPlayerAvatar.objectEventId != objectEventId && (template->trainerType == 1 || template->trainerType == 3) && (template->trainerRange_berryTreeId != 0 || *template->script == 0x5C /*trainerbattle*/))
+        objectEvent->trainerRange_berryTreeId = MAX_SPINNER_VISION_RANGE;
+    else
+        objectEvent->trainerRange_berryTreeId = template->trainerRange_berryTreeId;
+
     objectEvent->previousMovementDirection = gInitialMovementTypeFacingDirections[template->movementType];
     SetObjectEventDirection(objectEvent, objectEvent->previousMovementDirection);
     SetObjectEventDynamicGraphicsId(objectEvent);
@@ -1550,7 +1569,11 @@ static void CopyObjectGraphicsInfoToSpriteTemplate_WithMovementType(u16 graphics
 
 static void MakeSpriteTemplateFromObjectEventTemplate(const struct ObjectEventTemplate *objectEventTemplate, struct SpriteTemplate *spriteTemplate, const struct SubspriteTable **subspriteTables)
 {
-    CopyObjectGraphicsInfoToSpriteTemplate_WithMovementType(objectEventTemplate->graphicsId, objectEventTemplate->movementType, spriteTemplate, subspriteTables);
+    // Check if the trainers should be spinners.
+    if(GameVersionRude() && (objectEventTemplate->trainerType == 3 || objectEventTemplate->trainerType == 1))
+        CopyObjectGraphicsInfoToSpriteTemplate_WithMovementType(objectEventTemplate->graphicsId, 1, spriteTemplate, subspriteTables);
+    else
+        CopyObjectGraphicsInfoToSpriteTemplate_WithMovementType(objectEventTemplate->graphicsId, objectEventTemplate->movementType, spriteTemplate, subspriteTables);
 }
 
 // Used to create a sprite using a graphicsId associated with object events.
@@ -2873,6 +2896,7 @@ bool8 MovementType_LookAround_Step4(struct ObjectEvent *objectEvent, struct Spri
     u8 directions[4];
     memcpy(directions, gStandardDirections, sizeof directions);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_ANY);
+    // Note: Speedchoice made a weird code changes here that i dont think does anything without nerfing spinners (which i dont do)
     if (direction == DIR_NONE)
         direction = directions[Random() & 3];
 
@@ -2922,11 +2946,11 @@ bool8 MovementType_WanderUpAndDown_Step4(struct ObjectEvent *objectEvent, struct
     u8 direction;
     u8 directions[2];
     memcpy(directions, gUpAndDownDirections, sizeof directions);
-    direction = directions[Random() & 1];
+    direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
-    sprite->sTypeFuncId = 5;
+    sprite->data[1] = 5;
     if (GetCollisionInDirection(objectEvent, direction))
-        sprite->sTypeFuncId = 1;
+        sprite->data[1] = 1;
 
     return TRUE;
 }
@@ -3214,9 +3238,9 @@ bool8 MovementType_FaceDownAndUp_Step4(struct ObjectEvent *objectEvent, struct S
     memcpy(directions, gUpAndDownDirections, sizeof gUpAndDownDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_NORTH_SOUTH);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 1];
+        direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
-    sprite->sTypeFuncId = 1;
+    sprite->data[1] = 1;
     return TRUE;
 }
 
@@ -3264,9 +3288,9 @@ bool8 MovementType_FaceLeftAndRight_Step4(struct ObjectEvent *objectEvent, struc
     memcpy(directions, gLeftAndRightDirections, sizeof gLeftAndRightDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_EAST_WEST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 1];
+        direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
-    sprite->sTypeFuncId = 1;
+    sprite->data[1] = 1;
     return TRUE;
 }
 
@@ -3314,7 +3338,7 @@ bool8 MovementType_FaceUpAndLeft_Step4(struct ObjectEvent *objectEvent, struct S
     memcpy(directions, gUpAndLeftDirections, sizeof gUpAndLeftDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_NORTH_WEST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 1];
+        direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3364,7 +3388,7 @@ bool8 MovementType_FaceUpAndRight_Step4(struct ObjectEvent *objectEvent, struct 
     memcpy(directions, gUpAndRightDirections, sizeof gUpAndRightDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_NORTH_EAST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 1];
+        direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3414,7 +3438,7 @@ bool8 MovementType_FaceDownAndLeft_Step4(struct ObjectEvent *objectEvent, struct
     memcpy(directions, gDownAndLeftDirections, sizeof gDownAndLeftDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_SOUTH_WEST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 1];
+        direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3464,7 +3488,7 @@ bool8 MovementType_FaceDownAndRight_Step4(struct ObjectEvent *objectEvent, struc
     memcpy(directions, gDownAndRightDirections, sizeof gDownAndRightDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_SOUTH_EAST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 1];
+        direction = GetRandomFacingDirection(directions, 2);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3514,7 +3538,7 @@ bool8 MovementType_FaceDownUpAndLeft_Step4(struct ObjectEvent *objectEvent, stru
     memcpy(directions, gDownUpAndLeftDirections, sizeof gDownUpAndLeftDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_NORTH_SOUTH_WEST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 3];
+        direction = GetRandomFacingDirection(directions, 4);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3564,7 +3588,7 @@ bool8 MovementType_FaceDownUpAndRight_Step4(struct ObjectEvent *objectEvent, str
     memcpy(directions, gDownUpAndRightDirections, sizeof gDownUpAndRightDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_NORTH_SOUTH_EAST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 3];
+        direction = GetRandomFacingDirection(directions, 4);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3614,7 +3638,7 @@ bool8 MovementType_FaceUpLeftAndRight_Step4(struct ObjectEvent *objectEvent, str
     memcpy(directions, gUpLeftAndRightDirections, sizeof gUpLeftAndRightDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_NORTH_EAST_WEST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 3];
+        direction = GetRandomFacingDirection(directions, 4);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -3664,7 +3688,7 @@ bool8 MovementType_FaceDownLeftAndRight_Step4(struct ObjectEvent *objectEvent, s
     memcpy(directions, gDownLeftAndRightDirections, sizeof gDownLeftAndRightDirections);
     direction = TryGetTrainerEncounterDirection(objectEvent, RUNFOLLOW_SOUTH_EAST_WEST);
     if (direction == DIR_NONE)
-        direction = directions[Random() & 3];
+        direction = GetRandomFacingDirection(directions, 4);
     SetObjectEventDirection(objectEvent, direction);
     sprite->sTypeFuncId = 1;
     return TRUE;
@@ -8520,9 +8544,40 @@ static u8 DoJumpSpecialSpriteMovement(struct Sprite *sprite)
 #undef sJumpType
 #undef sTimer
 
+// Speedchoice Port: storing timers for new spinners?
+extern struct MapObjectTimerBackup gMapObjectTimerBackup[MAX_SPRITES];
+void TryRestoringSpinnerTimerBackup(struct Sprite *sprite)
+{
+    u8 i;
+
+    // if the first entry is backed up, the whole array is. sort of a hack so I dont need to decompile submenu calls.
+    if(gMapObjectTimerBackup[0].backedUp == TRUE && GameVersionRude()) // only fix bag manip if HELL is enabled.
+    {
+        for(i = 0; i < MAX_SPRITES; i++)
+        {
+            // dont adjust the player's timer for safety.
+            if(gMapObjectTimerBackup[i].backedUp == TRUE && gSprites[gPlayerAvatar.spriteId].data[0] != gMapObjectTimerBackup[i].spriteId)
+                gSprites[i].data[3] = gMapObjectTimerBackup[i].timer;
+
+            gMapObjectTimerBackup[i].timer = 0;
+            gMapObjectTimerBackup[i].spriteId = 0;
+            gMapObjectTimerBackup[i].backedUp = FALSE; // since the player's info is also backed up, dont forget to unassumingly clear the backup status.
+        }
+    }
+}
+
 static void SetMovementDelay(struct Sprite *sprite, s16 timer)
 {
+    TryRestoringSpinnerTimerBackup(sprite);
+    if(GameVersionRude() && (gObjectEvents[sprite->data[0]].trainerType == 1 || gObjectEvents[sprite->data[0]].trainerType == 3))
+    {
+        // Port from speedchoice, set the timer for how long until the spinner moves again.
+        sprite->data[3] = (Random() % 8) * 2 + 2;
+    }
+    else
+    {
     sprite->data[3] = timer;
+    }
 }
 
 static bool8 WaitForMovementDelay(struct Sprite *sprite)
@@ -8969,4 +9024,17 @@ u8 MovementAction_FlyDown_Step1(struct ObjectEvent *objectEvent, struct Sprite *
 u8 MovementAction_Fly_Finish(struct ObjectEvent *objectEvent, struct Sprite *sprite)
 {
     return TRUE;
+}
+
+
+// Handle spinner movement for Rude Trainer Mode. (Ported from speedchoice)
+// If RudeTrainers is enabled, will ignore the inputs and return a random direction,
+//  otherwise, it will select one of the options and return it as normal.
+u8 GetRandomFacingDirection(u8* directions, u8 numChoices){
+    if(GameVersionRude()) {
+        u8 newDirections[4];
+        memcpy(newDirections, gStandardDirections, sizeof newDirections);
+        return newDirections[Random() % 4];
+    } else
+        return directions[Random() % numChoices];
 }

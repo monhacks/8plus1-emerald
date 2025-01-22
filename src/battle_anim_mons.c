@@ -15,6 +15,7 @@
 #include "trig.h"
 #include "util.h"
 #include "constants/battle_anim.h"
+#include "game_version.h"
 
 #define IS_DOUBLE_BATTLE() ((gBattleTypeFlags & BATTLE_TYPE_DOUBLE))
 
@@ -146,7 +147,7 @@ u8 GetBattlerSpriteCoord(u8 battlerId, u8 coordType)
             {
                 spriteInfo = gBattleSpritesDataPtr->battlerData;
                 if (!spriteInfo[battlerId].transformSpecies)
-                    species = GetMonData(&gEnemyParty[gBattlerPartyIndexes[battlerId]], MON_DATA_SPECIES);
+                    species = ObfuscateSpecies(GetMonData(&gEnemyParty[gBattlerPartyIndexes[battlerId]], MON_DATA_SPECIES));
                 else
                     species = spriteInfo[battlerId].transformSpecies;
             }
@@ -154,7 +155,7 @@ u8 GetBattlerSpriteCoord(u8 battlerId, u8 coordType)
             {
                 spriteInfo = gBattleSpritesDataPtr->battlerData;
                 if (!spriteInfo[battlerId].transformSpecies)
-                    species = GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerId]], MON_DATA_SPECIES);
+                    species = ObfuscateSpecies(GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerId]], MON_DATA_SPECIES));
                 else
                     species = spriteInfo[battlerId].transformSpecies;
             }

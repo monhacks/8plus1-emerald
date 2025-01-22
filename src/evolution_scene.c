@@ -33,6 +33,7 @@
 #include "constants/songs.h"
 #include "constants/rgb.h"
 #include "constants/items.h"
+#include "game_version.h"
 
 extern struct Evolution gEvolutionTable[][EVOS_PER_MON];
 
@@ -164,6 +165,7 @@ static void CB2_BeginEvolutionScene(void)
 #define tLearnMoveNoState   data[8]
 #define tEvoWasStopped      data[9]
 #define tPartyId            data[10]
+#define tOrigEvoSpecies     data[11]
 
 #define TASK_BIT_CAN_STOP       (1 << 0)
 #define TASK_BIT_LEARN_MOVE     (1 << 7)
@@ -213,6 +215,8 @@ void EvolutionScene(struct Pokemon *mon, u16 postEvoSpecies, bool8 canStopEvo, u
     u32 trainerId, personality;
     const struct CompressedSpritePalette* pokePal;
     u8 id;
+    u16 origEvoSpecies = postEvoSpecies;
+    postEvoSpecies = ObfuscateSpecies(postEvoSpecies);
 
     SetHBlankCallback(NULL);
     SetVBlankCallback(NULL);
@@ -256,7 +260,7 @@ void EvolutionScene(struct Pokemon *mon, u16 postEvoSpecies, bool8 canStopEvo, u
     StringCopy(gStringVar2, gSpeciesNames[postEvoSpecies]);
 
     // preEvo sprite
-    currSpecies = GetMonData(mon, MON_DATA_SPECIES);
+    currSpecies = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES));
     trainerId = GetMonData(mon, MON_DATA_OT_ID);
     personality = GetMonData(mon, MON_DATA_PERSONALITY);
     DecompressPicFromTable_2(&gMonFrontPicTable[currSpecies],
@@ -293,6 +297,7 @@ void EvolutionScene(struct Pokemon *mon, u16 postEvoSpecies, bool8 canStopEvo, u
     gTasks[id].tState = 0;
     gTasks[id].tPreEvoSpecies = currSpecies;
     gTasks[id].tPostEvoSpecies = postEvoSpecies;
+    gTasks[id].tOrigEvoSpecies = origEvoSpecies;
     gTasks[id].tCanStop = canStopEvo;
     gTasks[id].tLearnsFirstMove = TRUE;
     gTasks[id].tEvoWasStopped = FALSE;
@@ -472,6 +477,8 @@ void TradeEvolutionScene(struct Pokemon *mon, u16 postEvoSpecies, u8 preEvoSprit
     u32 trainerId, personality;
     const struct CompressedSpritePalette* pokePal;
     u8 id;
+    u16 origEvoSpecies = postEvoSpecies;
+    postEvoSpecies = ObfuscateSpecies(postEvoSpecies);
 
     GetMonData(mon, MON_DATA_NICKNAME, name);
     StringCopy_Nickname(gStringVar1, name);
@@ -480,7 +487,7 @@ void TradeEvolutionScene(struct Pokemon *mon, u16 postEvoSpecies, u8 preEvoSprit
     gAffineAnimsDisabled = TRUE;
 
     // preEvo sprite
-    currSpecies = GetMonData(mon, MON_DATA_SPECIES);
+    currSpecies = ObfuscateSpecies(GetMonData(mon, MON_DATA_SPECIES));
     personality = GetMonData(mon, MON_DATA_PERSONALITY);
     trainerId = GetMonData(mon, MON_DATA_OT_ID);
 
@@ -508,6 +515,7 @@ void TradeEvolutionScene(struct Pokemon *mon, u16 postEvoSpecies, u8 preEvoSprit
     gTasks[id].tState = 0;
     gTasks[id].tPreEvoSpecies = currSpecies;
     gTasks[id].tPostEvoSpecies = postEvoSpecies;
+    gTasks[id].tOrigEvoSpecies = origEvoSpecies;
     gTasks[id].tLearnsFirstMove = TRUE;
     gTasks[id].tEvoWasStopped = FALSE;
     gTasks[id].tPartyId = partyId;
@@ -761,11 +769,11 @@ static void Task_EvolutionScene(u8 taskId)
             BattlePutTextOnWindow(gStringVar4, B_WIN_MSG);
             PlayBGM(MUS_EVOLVED);
             gTasks[taskId].tState++;
-            SetMonData(mon, MON_DATA_SPECIES, (void *)(&gTasks[taskId].tPostEvoSpecies));
+            SetMonData(mon, MON_DATA_SPECIES, (void *)(&gTasks[taskId].tOrigEvoSpecies));
             CalculateMonStats(mon);
             EvolutionRenameMon(mon, gTasks[taskId].tPreEvoSpecies, gTasks[taskId].tPostEvoSpecies);
-            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tPostEvoSpecies), FLAG_SET_SEEN);
-            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tPostEvoSpecies), FLAG_SET_CAUGHT);
+            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tOrigEvoSpecies), FLAG_SET_SEEN);
+            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tOrigEvoSpecies), FLAG_SET_CAUGHT);
             IncrementGameStat(GAME_STAT_EVOLVED_POKEMON);
         }
         break;
@@ -1180,11 +1188,11 @@ static void Task_TradeEvolutionScene(u8 taskId)
             DrawTextOnTradeWindow(0, gStringVar4, 1);
             PlayFanfare(MUS_EVOLVED);
             gTasks[taskId].tState++;
-            SetMonData(mon, MON_DATA_SPECIES, (&gTasks[taskId].tPostEvoSpecies));
+            SetMonData(mon, MON_DATA_SPECIES, (&gTasks[taskId].tOrigEvoSpecies));
             CalculateMonStats(mon);
             EvolutionRenameMon(mon, gTasks[taskId].tPreEvoSpecies, gTasks[taskId].tPostEvoSpecies);
-            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tPostEvoSpecies), FLAG_SET_SEEN);
-            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tPostEvoSpecies), FLAG_SET_CAUGHT);
+            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tOrigEvoSpecies), FLAG_SET_SEEN);
+            GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId].tOrigEvoSpecies), FLAG_SET_CAUGHT);
             IncrementGameStat(GAME_STAT_EVOLVED_POKEMON);
         }
         break;

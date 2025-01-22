@@ -65,6 +65,7 @@
 #include "constants/weather.h"
 #include "constants/metatile_labels.h"
 #include "palette.h"
+#include "game_version.h"
 
 #define TAG_ITEM_ICON 5500
 
@@ -1639,7 +1640,7 @@ bool8 BufferTMHMMoveName(void)
 {
     if (gSpecialVar_0x8004 >= ITEM_TM01 && gSpecialVar_0x8004 <= ITEM_HM08)
     {
-        StringCopy(gStringVar2, gMoveNames[ItemIdToBattleMoveId(gSpecialVar_0x8004)]);
+        StringCopy(gStringVar2, ObfuscateMoveName(ItemIdToBattleMoveId(gSpecialVar_0x8004)));
         return TRUE;
     }
 
@@ -3086,6 +3087,7 @@ static const u16 sBattleFrontier_TutorMoves2[] =
 
 void BufferBattleFrontierTutorMoveName(void)
 {
+    // TBH, I dont care about battle frontier
     if (gSpecialVar_0x8005 != 0)
         StringCopy(gStringVar1, gMoveNames[sBattleFrontier_TutorMoves2[gSpecialVar_0x8004]]);
     else

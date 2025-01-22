@@ -689,6 +689,9 @@ const u32 gItemIconPalette_SilphScope[] = INCBIN_U32("graphics/items/icon_palett
 const u32 gItemIcon_Bicycle[] = INCBIN_U32("graphics/items/icons/bicycle.4bpp.lz");
 const u32 gItemIconPalette_Bicycle[] = INCBIN_U32("graphics/items/icon_palettes/bicycle.gbapal.lz");
 
+const u32 gItemIcon_Tent[] = INCBIN_U32("graphics/decorations/red_tent.4bpp.lz");
+const u32 gItemIconPalette_Tent[] = INCBIN_U32("graphics/decorations/red_tent.gbapal.lz");
+
 const u32 gItemIcon_TownMap[] = INCBIN_U32("graphics/items/icons/town_map.4bpp.lz");
 const u32 gItemIconPalette_TownMap[] = INCBIN_U32("graphics/items/icon_palettes/town_map.gbapal.lz");
 

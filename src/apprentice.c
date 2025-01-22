@@ -27,6 +27,7 @@
 #include "constants/songs.h"
 #include "constants/trainers.h"
 #include "constants/moves.h"
+#include "game_version.h"
 
 /* Summary of Apprentice, because (as of writing at least) it's not very well documented online
  *
@@ -605,8 +606,8 @@ static void CreateApprenticeMenu(u8 menu)
     case APPRENTICE_ASK_MOVES:
         left = 17;
         top = 8;
-        strings[0] = gMoveNames[gApprenticeQuestionData->moveId1];
-        strings[1] = gMoveNames[gApprenticeQuestionData->moveId2];
+        strings[0] = ObfuscateMoveName(gApprenticeQuestionData->moveId1);
+        strings[1] = ObfuscateMoveName(gApprenticeQuestionData->moveId2);
         break;
     case APPRENTICE_ASK_GIVE:
         left = 18;
@@ -1062,10 +1063,10 @@ static void ApprenticeBufferString(void)
         StringCopy(stringDst, gSpeciesNames[gApprenticeQuestionData->speciesId]);
         break;
     case APPRENTICE_BUFF_MOVE1:
-        StringCopy(stringDst, gMoveNames[gApprenticeQuestionData->moveId1]);
+        StringCopy(stringDst, ObfuscateMoveName(gApprenticeQuestionData->moveId1));
         break;
     case APPRENTICE_BUFF_MOVE2:
-        StringCopy(stringDst, gMoveNames[gApprenticeQuestionData->moveId2]);
+        StringCopy(stringDst, ObfuscateMoveName(gApprenticeQuestionData->moveId2));
         break;
     case APPRENTICE_BUFF_ITEM:
         StringCopy(stringDst, ItemId_GetName(PLAYER_APPRENTICE.questions[CURRENT_QUESTION_NUM].data));
