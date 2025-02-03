@@ -2,7 +2,7 @@
 # Pokemon 8+1 Emerald  
 An 8-in-1 emerald game designed for nuzlocke relays.  
   
-If you just want to download, you can do so on the [releases](https://github.com/ordinary-magic/Pokemon-4x-Emerald/releases) page.
+If you just want to download, you can do so on the [releases](https://github.com/ordinary-magic/Pokemon-8plus1-Emerald/releases) page.
   
 Game Features (Many Spoilers)  
   
