@@ -1,8 +1,9 @@
 #include "game_version.h"
 #include "global.h"
 #include "random.h"
-#include "constants/moves.h"
+#include "event_data.h"
 #include "constants/battle.h"
+#include "constants/moves.h"
 #include "constants/region_map_sections.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
@@ -96,6 +97,9 @@ const u8 sFakeMoveDescription[18] = _("It's a Good Move");
 // SPEEDCHOIE PORT: Spinner timer used in rude mode.
 EWRAM_DATA struct MapObjectTimerBackup gMapObjectTimerBackup[MAX_SPRITES] = {0};
 
+// Jumpscare stuff
+EWRAM_DATA bool8 gIsJumpscareBattle = FALSE;
+
 // Special Region IDS and the status to apply
 #define NUM_OVERWORLD_HEALS 7
 const u8 NON_POKECENTER_HEALS[NUM_OVERWORLD_HEALS] = {
@@ -119,34 +123,69 @@ const u8 NON_POKECENTER_STATUS[NUM_OVERWORLD_HEALS] = {
 
 // Return True/False if the game version is "Randomized"
 u16 GameVersionRandom(void) {
-    return gGameSubVersion == VERSION_RANDOMIZED;
+    return gGameSubVersion == VERSION_RANDOMIZED || GameVersionRainbow();
 }
 
 // Return True/False if the game version is "Obfuscated"
 u16 GameVersionObfuscated(void) {
-    return gGameSubVersion == VERSION_OBFUSCATED;
+    return gGameSubVersion == VERSION_OBFUSCATED || GameVersionRainbow();
 }
 
 // Return True/False if the game version is "Rude Trainers"
 u16 GameVersionRude(void) {
-    return gGameSubVersion == VERSION_RUDE;
+    return gGameSubVersion == VERSION_RUDE || GameVersionRainbow();
 }
 
 // Return True/False if the game version is "Hidden Power"
 u16 GameVersionHiddenPower(void) {
-    return gGameSubVersion == VERSION_HIDDEN_POWER;
+    return gGameSubVersion == VERSION_HIDDEN_POWER || GameVersionRainbow();
+}
+
+// Return True/False if the game version is "Sketchy"
+u16 GameVersionSketchy(void) {
+    return gGameSubVersion == VERSION_SKETCHY || GameVersionRainbow();
+}
+
+// Return True/False if the game version is "Reverse"
+u16 GameVersionReverse(void) {
+    return gGameSubVersion == VERSION_REVERSE || GameVersionRainbow();
+}
+
+// Return True/False if the game version is "Marathon"
+u16 GameVersionMarathon(void) {
+    return gGameSubVersion == VERSION_MARATHON || GameVersionRainbow();
+}
+
+// Return True/False if the game version is "Unlucky"
+u16 GameVersionUnlucky(void) {
+    return gGameSubVersion == VERSION_UNLUCKY || GameVersionRainbow();
+}
+
+// Return True/False if the game version is "Rainbow"
+u16 GameVersionRainbow(void) {
+    return gGameSubVersion == VERSION_RAINBOW;
 }
 
 // Get the pokemon that pops out of birch's pokeball, based on the game
 u16 GetOpeningSprite(void) {
     switch (gGameSubVersion){
         case VERSION_RANDOMIZED:
-            return SPECIES_DELIBIRD;
+            return SPECIES_DITTO;
         case VERSION_RUDE:
             return SPECIES_HOUNDOOM;
         case VERSION_HIDDEN_POWER:
             return SPECIES_UNOWN;
-        default: // Obfuscated mode just obfuscates the lotad
+        case VERSION_SKETCHY:
+            return SPECIES_SMEARGLE;
+        case VERSION_REVERSE:
+            return SPECIES_PORYGON;
+        case VERSION_MARATHON:
+            return SPECIES_DODUO;
+        case VERSION_UNLUCKY:
+            return SPECIES_MURKROW;
+        
+        // Obfuscated mode just obfuscates the lotad
+        default:
             return SPECIES_LOTAD;
     }
 }
@@ -366,12 +405,29 @@ u16 ObfuscateSpecies(u16 species) {
 // level - the original level of the pokemon
 // class - the trainer's class type
 u8 GetTrainerPokemonLevel(u8 level, u8 class) {
-    if (GameVersionRude()) {
-        if (class != TRAINER_CLASS_ELITE_FOUR && class != TRAINER_CLASS_LEADER)// &&
-            //class != TRAINER_CLASS_AQUA_ADMIN && class != TRAINER_CLASS_AQUA_LEADER &&
-            //class != TRAINER_CLASS_MAGMA_ADMIN && class != TRAINER_CLASS_MAGMA_LEADER)
-            return level * RUDE_TRAINER_LEVEL_SCALING;
+    if (IsJumpscareBattle())
+        return GetLevelCap(); // Jumpscare trainers are always level cap
+
+    if (GameVersionRude() || GameVersionMarathon()) {
+        if (class != TRAINER_CLASS_ELITE_FOUR && class != TRAINER_CLASS_LEADER &&
+            class != TRAINER_CLASS_AQUA_ADMIN && class != TRAINER_CLASS_AQUA_LEADER &&
+            class != TRAINER_CLASS_MAGMA_ADMIN && class != TRAINER_CLASS_MAGMA_LEADER)
+            return (level * 1.2) + 3;
     }
+
+    // Rival is always at the level cap (after first battle)
+    if (class == TRAINER_CLASS_RIVAL && level > 8)
+            return GetLevelCap();
+
+    return level;
+}
+
+// Apply any potential level scaling to a trainer's pokemon.
+// If the game mode is not Rude, this will always return the original level.
+// level - the original level of the pokemon
+u8 GetWildPokemonLevel(u8 level) {
+    if (GameVersionMarathon())
+        return (level * 1.25) + 5;
     return level;
 }
 
@@ -379,7 +435,7 @@ u8 GetTrainerPokemonLevel(u8 level, u8 class) {
 // Otherwise, will return a status appropriate to where the player is being healed.
 // mapID - the region map section id where the player got healed, or none if its a box retrieval. 
 u8 ShouldApplyStatusOnHeal(u8 mapID) {
-    if (GameVersionRude()) {
+    if (GameVersionRude() || GameVersionUnlucky()) {
         u8 i;
         for (i = 0; i < NUM_OVERWORLD_HEALS; ++i)
             if (NON_POKECENTER_HEALS[i] == mapID)
@@ -387,6 +443,26 @@ u8 ShouldApplyStatusOnHeal(u8 mapID) {
         return STATUS1_POISON; // any other heal is a pokemon center and will just poison u
     }
     return STATUS1_NONE;
+}
+
+// If rude version is not active, will always return FALSE
+// Otherwise, it will roll a % chance (level cap / 255) to determine
+//   if the current battle should be a jumpscare.
+u8 ShouldJumpscare() {
+    if (GameVersionRude())
+        // In Rainbow Mode, every battle is a jumpscare
+        gIsJumpscareBattle = (RandomOr(0) & 0xFF) < GetLevelCap();
+    return IsJumpscareBattle();
+}
+
+// Check if the current battle is a jumpscare battle
+u8 IsJumpscareBattle() {
+    return gIsJumpscareBattle;
+}
+
+// Reset the jumpscare flag
+void ClearJumpscare() {
+    gIsJumpscareBattle = FALSE;
 }
 
 // If HiddenPower mode is not active, will simply return the input fixediv value.
@@ -406,8 +482,22 @@ u16 SwizzleIV(u8 iv, u8 data_type) {
     return iv;
 }
 
+// If Unlucky mode is not active, will simply return the result of Random().
+//  Otherwise, it will return the provided deterministic result instead.
+u16 RandomOr(u16 determinsticResult)
+{
+    if (!GameVersionUnlucky())
+        return Random();
+    else
+        return determinsticResult;
+}
+
 // TODO:
+// Consider making different player sprites/palettes for different versions
+
+// LOW PRIORITY:
+// Pokedex cries are probably double obfuscated
+// Test more unlucky mechanics
 // test obfuscated move relearner move names
+// Test Dad norman
 // Need to check like 30 other sprite menu locations (xcatch, wcontests, ?eggs, xevolutions, ?item use, ?move relearner)
-// Check non-pc heals apply right status (xmom, lavaridge, old lady, xpc, weather institute bed)
-// honestly, im reasonably confident enough to release this as is and test via gameplay.

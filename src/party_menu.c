@@ -4955,16 +4955,10 @@ static void Task_TryLearningNextMoveAfterText(u8 taskId)
 
 // Check if a pokemon is at the level cap
 u8 IsLevelCapped(u8 level){
-    u8 i;
-        for (i=0; i < NUM_LEVEL_CAPS; ++i){
-            // Search the flags until we find the first un-set one
-            if (!FlagGet(sLevelCapFlags[i]))
-                // Check if we are at the level cap
-                if (level >= sLevelCaps[i])
-                    return 1;
-                break;
-        }
-        return 0;
+    u16 cap = GetLevelCap();
+    if (level >= cap)
+        return 1;
+    return 0;
 }
 
 void ItemUseCB_RareCandy(u8 taskId, TaskFunc task)

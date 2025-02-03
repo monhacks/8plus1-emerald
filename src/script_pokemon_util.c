@@ -37,22 +37,22 @@ void HealPlayerParty(void)
 
     for(i = 0; i < gPlayerPartyCount; i++)
     {
-        *(u32*)arg = 0; // 0 out the previous statuses
-        if (!GameVersionRude()) 
-        {
-            // restore hp.
-            u16 maxHP = GetMonData(&gPlayerParty[i], MON_DATA_MAX_HP);
-            arg[0] = maxHP;
-            arg[1] = maxHP >> 8;
-            SetMonData(&gPlayerParty[i], MON_DATA_HP, arg);
-        }
-        ppBonuses = GetMonData(&gPlayerParty[i], MON_DATA_PP_BONUSES);
+        // restore hp.
+        u16 maxHP = GetMonData(&gPlayerParty[i], MON_DATA_MAX_HP);
+        *(u32*)arg = 0; // clear the previous statuses
+        arg[0] = maxHP;
+        arg[1] = maxHP >> 8;
+        SetMonData(&gPlayerParty[i], MON_DATA_HP, arg);
 
         // restore PP.
-        for(j = 0; j < MAX_MON_MOVES; j++)
+        if (!GameVersionMarathon())
         {
-            arg[0] = CalculatePPWithBonus(GetMonData(&gPlayerParty[i], MON_DATA_MOVE1 + j), ppBonuses, j);
-            SetMonData(&gPlayerParty[i], MON_DATA_PP1 + j, arg);
+            ppBonuses = GetMonData(&gPlayerParty[i], MON_DATA_PP_BONUSES);
+            for(j = 0; j < MAX_MON_MOVES; j++)
+            {
+                arg[0] = CalculatePPWithBonus(GetMonData(&gPlayerParty[i], MON_DATA_MOVE1 + j), ppBonuses, j);
+                SetMonData(&gPlayerParty[i], MON_DATA_PP1 + j, arg);
+            }
         }
 
         // Roll 1/Status Chance and apply the status if it's 0.

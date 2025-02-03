@@ -315,6 +315,21 @@ $(TITLESCREENGFXDIR)/hell_version.8bpp: %.8bpp: %.png
 $(TITLESCREENGFXDIR)/unknown_version.8bpp: %.8bpp: %.png
 	$(GFX) $< $@ -mwidth 8 -mheight 4
 
+$(TITLESCREENGFXDIR)/sketchy_version.8bpp: %.8bpp: %.png
+	$(GFX) $< $@ -mwidth 8 -mheight 4
+
+$(TITLESCREENGFXDIR)/reverse_version.8bpp: %.8bpp: %.png
+	$(GFX) $< $@ -mwidth 8 -mheight 4
+
+$(TITLESCREENGFXDIR)/iron_version.8bpp: %.8bpp: %.png
+	$(GFX) $< $@ -mwidth 8 -mheight 4
+
+$(TITLESCREENGFXDIR)/hex_version.8bpp: %.8bpp: %.png
+	$(GFX) $< $@ -mwidth 8 -mheight 4
+
+$(TITLESCREENGFXDIR)/rainbow_version.8bpp: %.8bpp: %.png
+	$(GFX) $< $@ -mwidth 8 -mheight 4
+
 graphics/pokemon_jump/bg.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 63 -Wnum_tiles
 

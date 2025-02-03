@@ -57,7 +57,7 @@
 #define SE_TRUCK_UNLOAD             51 // SE_TRACK_HAIKI
 #define SE_TRUCK_DOOR               52 // SE_TRACK_DOOR
 #define SE_BERRY_BLENDER            53 // SE_MOTER
-#define SE_CARD                     54 // SE_CARD (Unused, different from the RS card SE)
+#define SE_JUMPSCARE                54 // SE_JUMPSCARE (Mod Specific)
 #define SE_SAVE                     55 // SE_SAVE
 #define SE_BALL_BOUNCE_1            56 // SE_KON
 #define SE_BALL_BOUNCE_2            57 // SE_KON2

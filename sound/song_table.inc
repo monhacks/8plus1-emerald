@@ -55,7 +55,7 @@ gSongTable::
 	song se_truck_unload, 2, 2
 	song se_truck_door, 1, 1
 	song se_berry_blender, 2, 2
-	song se_card, 1, 1
+	song se_jumpscare, 1, 1
 	song se_save, 1, 1
 	song se_ball_bounce_1, 1, 1
 	song se_ball_bounce_2, 1, 1

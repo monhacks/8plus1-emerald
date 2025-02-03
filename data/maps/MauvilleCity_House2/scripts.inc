@@ -26,7 +26,9 @@ MauvilleCity_House2_EventScript_AcceptTrade::
 	msgbox MauvilleCity_House2_Text_IllTradeYouCoinCase, MSGBOX_DEFAULT
 	removeitem ITEM_HARBOR_MAIL
 	giveitem ITEM_COIN_CASE
+	addcoins 100
 	setflag FLAG_RECEIVED_COIN_CASE
+	msgbox MauvilleCity_House2_Text_ExplainCoin, MSGBOX_DEFAULT
 	goto MauvilleCity_House2_EventScript_ReceivedCoinCase
 	end
 
@@ -52,11 +54,19 @@ MauvilleCity_House2_Text_TradeHarborMailForCoinCase:
 
 MauvilleCity_House2_Text_IllTradeYouCoinCase:
 	.string "Oh, I'm so happy!\n"
-	.string "Okay, I'll trade you a COIN CASE!$"
+	.string "...\p"
+	.string "Wait a second! You're underage!\n"
+	.string "It's illegal to give you this!\p" 
+	.string "Here, take this COIN WALLET instead!$"
+
+MauvilleCity_House2_Text_ExplainCoin:
+	.string "That COIN WALLET can be used\n"
+	.string "to trade Cryptocurrency (COIN).\l"
+	.string "Here, I'll give you 100 to start!$"
 
 MauvilleCity_House2_Text_UseCoinCaseAtGameCorner:
-	.string "That COIN CASE can be used\n"
-	.string "at the GAME CORNER.$"
+	.string "Keep an eye on your investments,\n"
+	.string "and you can get super rich!$"
 
 MauvilleCity_House2_Text_ThatsDisappointing:
 	.string "Oh, that's disappointing.\p"

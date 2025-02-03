@@ -62,6 +62,7 @@ static void ItemUseOnFieldCB_Berry(u8);
 static void ItemUseOnFieldCB_WailmerPailBerry(u8);
 static void ItemUseOnFieldCB_WailmerPailSudowoodo(u8);
 static void ItemUseOnFieldCB_Tent(u8);
+static void ItemUseOnFieldCB_Cologne(u8);
 static bool8 TryToWaterSudowoodo(void);
 static void BootUpSoundTMHM(u8);
 static void Task_ShowTMHMContainedMessage(u8);
@@ -895,6 +896,36 @@ static void Task_UseRepel(u8 taskId)
             DisplayItemMessage(taskId, FONT_NORMAL, gStringVar4, CloseItemMessage);
         else
             DisplayItemMessageInBattlePyramid(taskId, gStringVar4, Task_CloseBattlePyramidBagMessage);
+    }
+}
+
+void ItemUseOutOfBattle_Cologne(u8 taskId)
+{
+    if (!GameVersionMarathon()) // marathon mode placeholder
+    {
+        sItemUseOnFieldCB = ItemUseOnFieldCB_Cologne;
+        SetUpItemUseOnFieldCallback(taskId);
+    }
+    else
+    {
+        DisplayDadsAdviceCannotUseItemMessage(taskId, gTasks[taskId].tUsingRegisteredKeyItem);
+    }
+}
+
+static void ItemUseOnFieldCB_Cologne(u8 taskId)
+{
+    if (VarGet(VAR_REPEL_STEP_COUNT) == 0)
+    {
+        // Toggle on the cologne
+        VarSet(VAR_REPEL_STEP_COUNT, ItemId_GetHoldEffectParam(gSpecialVar_ItemId));
+        PlaySE(SE_REPEL);
+        DisplayItemMessageOnField(taskId, gText_WearingCologne, Task_CloseCantUseKeyItemMessage);
+    }
+    else
+    {
+        // Toggle off the cologne
+        VarSet(VAR_REPEL_STEP_COUNT, 0);
+        DisplayItemMessageOnField(taskId, gText_RemovingCologne, Task_CloseCantUseKeyItemMessage);
     }
 }
 

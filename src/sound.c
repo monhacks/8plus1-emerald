@@ -7,6 +7,7 @@
 #include "pokemon.h"
 #include "constants/songs.h"
 #include "task.h"
+#include "game_version.h"
 
 struct Fanfare
 {
@@ -375,7 +376,7 @@ void PlayCryInternal(u16 species, s8 pan, s8 volume, u8 priority, u8 mode)
     u32 index;
     u8 table;
 
-    species--;
+    species = ObfuscateSpecies(species) - 1;
 
     // Set default values
     // May be overridden depending on mode.

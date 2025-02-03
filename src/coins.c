@@ -7,6 +7,7 @@
 #include "menu.h"
 #include "international_string_util.h"
 #include "constants/coins.h"
+#include "game_version.h"
 
 static EWRAM_DATA u8 sCoinsWindowId = 0;
 
@@ -79,4 +80,19 @@ bool8 RemoveCoins(u16 toSub)
         return TRUE;
     }
     return FALSE;
+}
+
+// Calculate how much interest the coin has accrued
+void ApplyCoinInterest()
+{
+    u16 rand = RandomOr(10) & 0xFF;
+    u16 coin = GetCoins();
+
+    // Interest Amount ranges from approx -4% to 6%
+    // ()
+    // Unlucky mode will lose 0.4% each time
+    if (rand < 100)
+        RemoveCoins(coin * 0.1 * rand / 256);
+    else
+        AddCoins(coin * 0.1 * (rand - 100) / 256);
 }

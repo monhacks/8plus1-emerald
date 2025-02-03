@@ -218,6 +218,9 @@ bool8 CheckForTrainersWantingBattle(void)
             break;
     }
 
+    if (gNoOfApproachingTrainers > 0)
+        ShouldJumpscare(); // check if we should jumpscare for this battle
+
     if (gNoOfApproachingTrainers == 1)
     {
         ResetTrainerOpponentIds();
@@ -509,7 +512,10 @@ static bool8 TrainerMoveToPlayer(u8 taskId, struct Task *task, struct ObjectEven
     {
         if (task->tTrainerRange)
         {
-            ObjectEventSetHeldMovement(trainerObj, GetWalkNormalMovementAction(trainerObj->facingDirection));
+            if(IsJumpscareBattle())
+                ObjectEventSetHeldMovement(trainerObj, GetWalkFasterMovementAction(trainerObj->facingDirection));
+            else
+                ObjectEventSetHeldMovement(trainerObj, GetWalkNormalMovementAction(trainerObj->facingDirection));
             task->tTrainerRange--;
         }
         else

@@ -391,6 +391,7 @@ PetalburgCity_Gym_EventScript_NormanBattle::
 	call PetalburgCity_Gym_EventScript_UnlockAllDoors
 	special DrawWholeMapView
 	call PetalburgCity_Gym_EventScript_GiveFacade
+	call PetalburgCity_Gym_EventScript_GiveCologne
 	delay 30
 	msgbox PetalburgCity_Gym_Text_DadHappyAndSad, MSGBOX_DEFAULT
 	closemessage
@@ -409,6 +410,12 @@ PetalburgCity_Gym_EventScript_GiveFacade::
 	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_BagIsFull
 	setflag FLAG_RECEIVED_TM_FACADE
 	msgbox PetalburgCity_Gym_Text_ExplainFacade, MSGBOX_DEFAULT
+	return
+
+PetalburgCity_Gym_EventScript_GiveCologne::
+	msgbox PetalburgCity_Gym_Text_PreCologne, MSGBOX_DEFAULT
+	giveitem ITEM_COLOGNE
+	msgbox PetalburgCity_Gym_Text_ExplainCologne, MSGBOX_DEFAULT
 	return
 
 PetalburgCity_Gym_EventScript_WallysDadArrivesNorth::
@@ -1297,6 +1304,17 @@ PetalburgCity_Gym_Text_ExplainFacade:
 	.string "or burned.\p"
 	.string "It might be able to turn a bad\n"
 	.string "situation into an advantage.$"
+
+PetalburgCity_Gym_Text_PreCologne:
+	.string "DAD: You're growing so fast,\n"
+	.string "you'll need this soon too.$"
+
+PetalburgCity_Gym_Text_ExplainCologne:
+	.string "DAD: That's a bottle of my super\n"
+	.string "special, extra manly Cologne!.\p"
+	.string "Wild POKéMON will know better\n"
+	.string "than to bother you while\l"
+	.string "you wear something so cool!$"
 
 PetalburgCity_Gym_Text_DadHappyAndSad:
 	.string "DAD: As the GYM LEADER, I can't\n"

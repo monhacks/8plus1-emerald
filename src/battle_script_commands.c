@@ -52,6 +52,7 @@
 #include "constants/songs.h"
 #include "constants/trainers.h"
 #include "game_version.h"
+#include "coins.h"
 
 extern const u8 *const gBattleScriptsForMoveEffects[];
 
@@ -76,6 +77,8 @@ static void DrawLevelUpWindow2(void);
 static void PutMonIconOnLvlUpBanner(void);
 static void DrawLevelUpBannerText(void);
 static void SpriteCB_MonIconOnLvlUpBanner(struct Sprite *sprite);
+static u16 RandomOrActiveBattler(u16 playerResult, u16 aiResult);
+static u16 RandomOrBattleTarget(u16 playerTargetResult, u16 aiTargetResult);
 
 static void Cmd_attackcanceler(void);
 static void Cmd_accuracycheck(void);
@@ -913,18 +916,6 @@ static const u8 sBattlePalaceNatureToFlavorTextId[NUM_NATURES] =
     [NATURE_QUIRKY]  = B_MSG_EAGER_FOR_MORE,
 };
 
-const u16 sLevelCapFlags[NUM_LEVEL_CAPS] = {
-    FLAG_BADGE01_GET, FLAG_BADGE02_GET, FLAG_BADGE03_GET, FLAG_BADGE04_GET,
-    FLAG_BADGE05_GET, FLAG_BADGE06_GET, FLAG_BADGE07_GET, FLAG_BADGE08_GET,
-    FLAG_DEFEATED_ELITE_4_SIDNEY, FLAG_DEFEATED_ELITE_4_PHOEBE,
-    FLAG_DEFEATED_ELITE_4_GLACIA, FLAG_DEFEATED_ELITE_4_DRAKE,
-    FLAG_IS_CHAMPION,
-};
-
-const u16 sLevelCaps[NUM_LEVEL_CAPS] = {
-    80, 19, 24, 29, 31, 33, 42, 46, 49, 51, 53, 55, 58
-};
-
 static void Cmd_attackcanceler(void)
 {
     s32 i;
@@ -1186,7 +1177,7 @@ static void Cmd_accuracycheck(void)
             calc = (calc * (100 - param)) / 100;
 
         // final calculation
-        if ((Random() % 100 + 1) > calc)
+        if ((RandomOrBattleTarget(0,99) % 100 + 1) > calc)
         {
             gMoveResultFlags |= MOVE_RESULT_MISSED;
             if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE
@@ -1292,7 +1283,7 @@ static void Cmd_critcalc(void)
     if ((gBattleMons[gBattlerTarget].ability != ABILITY_BATTLE_ARMOR && gBattleMons[gBattlerTarget].ability != ABILITY_SHELL_ARMOR)
      && !(gStatuses3[gBattlerAttacker] & STATUS3_CANT_SCORE_A_CRIT)
      && !(gBattleTypeFlags & (BATTLE_TYPE_WALLY_TUTORIAL | BATTLE_TYPE_FIRST_BATTLE))
-     && !(Random() % sCriticalHitChance[critChance]))
+     && !(RandomOr(1) % sCriticalHitChance[critChance]))
         gCritMultiplier = 2;
     else
         gCritMultiplier = 1;
@@ -1651,7 +1642,7 @@ u8 AI_TypeCalc(u16 move, u16 targetSpecies, u8 targetAbility)
 // Multiplies the damage by a random factor between 85% to 100% inclusive
 static inline void ApplyRandomDmgMultiplier(void)
 {
-    u16 rand = Random();
+    u16 rand = RandomOrBattleTarget(0, 15);
     u16 randPercent = 100 - (rand % 16);
 
     if (gBattleMoveDamage != 0)
@@ -2491,7 +2482,7 @@ void SetMoveEffect(bool8 primary, u8 certain)
             BattleScriptPush(gBattlescriptCurrInstr + 1);
 
             if (sStatusFlagsForMoveEffects[gBattleCommunication[MOVE_EFFECT_BYTE]] == STATUS1_SLEEP)
-                gBattleMons[gEffectBattler].status1 |= STATUS1_SLEEP_TURN((Random() & 3) + 2); // 2-5 turns
+                gBattleMons[gEffectBattler].status1 |= STATUS1_SLEEP_TURN((RandomOrBattleTarget(3,0) & 3) + 2); // 2-5 turns
             else
                 gBattleMons[gEffectBattler].status1 |= sStatusFlagsForMoveEffects[gBattleCommunication[MOVE_EFFECT_BYTE]];
 
@@ -2551,7 +2542,7 @@ void SetMoveEffect(bool8 primary, u8 certain)
                 }
                 else
                 {
-                    gBattleMons[gEffectBattler].status2 |= STATUS2_CONFUSION_TURN(((Random()) % 4) + 2); // 2-5 turns
+                    gBattleMons[gEffectBattler].status2 |= STATUS2_CONFUSION_TURN(((RandomOrBattleTarget(3,0)) % 4) + 2); // 2-5 turns
 
                     BattleScriptPush(gBattlescriptCurrInstr + 1);
                     gBattlescriptCurrInstr = sMoveEffectBS_Ptrs[gBattleCommunication[MOVE_EFFECT_BYTE]];
@@ -2583,7 +2574,7 @@ void SetMoveEffect(bool8 primary, u8 certain)
                 {
                     gBattleMons[gEffectBattler].status2 |= STATUS2_MULTIPLETURNS;
                     gLockedMoves[gEffectBattler] = gCurrentMove;
-                    gBattleMons[gEffectBattler].status2 |= STATUS2_UPROAR_TURN((Random() & 3) + 2); // 2-5 turns
+                    gBattleMons[gEffectBattler].status2 |= STATUS2_UPROAR_TURN((RandomOr(3) & 3) + 2); // 2-5 turns
 
                     BattleScriptPush(gBattlescriptCurrInstr + 1);
                     gBattlescriptCurrInstr = sMoveEffectBS_Ptrs[gBattleCommunication[MOVE_EFFECT_BYTE]];
@@ -2628,7 +2619,7 @@ void SetMoveEffect(bool8 primary, u8 certain)
                 }
                 else
                 {
-                    gBattleMons[gEffectBattler].status2 |= STATUS2_WRAPPED_TURN((Random() & 3) + 3); // 3-6 turns
+                    gBattleMons[gEffectBattler].status2 |= STATUS2_WRAPPED_TURN((RandomOrBattleTarget(3,0) & 3) + 3); // 3-6 turns
 
                     *(gBattleStruct->wrappedMove + gEffectBattler * 2 + 0) = gCurrentMove;
                     *(gBattleStruct->wrappedMove + gEffectBattler * 2 + 1) = gCurrentMove >> 8;
@@ -2870,7 +2861,7 @@ void SetMoveEffect(bool8 primary, u8 certain)
                 {
                     gBattleMons[gEffectBattler].status2 |= STATUS2_MULTIPLETURNS;
                     gLockedMoves[gEffectBattler] = gCurrentMove;
-                    gBattleMons[gEffectBattler].status2 |= STATUS2_LOCK_CONFUSE_TURN((Random() & 1) + 2); // thrash for 2-3 turns
+                    gBattleMons[gEffectBattler].status2 |= STATUS2_LOCK_CONFUSE_TURN((RandomOrActiveBattler(0,1) & 1) + 2); // thrash for 2-3 turns
                 }
                 break;
             case MOVE_EFFECT_KNOCK_OFF:
@@ -2933,7 +2924,7 @@ static void Cmd_seteffectwithchance(void)
         gBattleCommunication[MOVE_EFFECT_BYTE] &= ~MOVE_EFFECT_CERTAIN;
         SetMoveEffect(FALSE, MOVE_EFFECT_CERTAIN);
     }
-    else if (Random() % 100 < percentChance
+    else if (RandomOrBattleTarget(0,99) % 100 < percentChance
              && gBattleCommunication[MOVE_EFFECT_BYTE]
              && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
     {
@@ -3267,14 +3258,11 @@ static void Cmd_jumpiftype(void)
 
 // Determine how much exp a pokemon should get based on the level cap
 static u16 LevelCapExp(u8 level, u16 exp) {
-    u8 i;
-    for (i=0; i < NUM_LEVEL_CAPS; ++i){
-        // Search the flags until we find the first un-set one
-        if (!FlagGet(sLevelCapFlags[i]))
-            // Check if we are at the level cap
-            if (level >= sLevelCaps[i])
-                return 1;
-            break;
+    if (!GameVersionReverse()) // Reverse version doesnt cap exp
+    {
+        u8 cap = GetLevelCap();
+        if (level >= cap)
+            return 1;
     }
     return exp;
 }
@@ -3377,7 +3365,7 @@ static void Cmd_getexp(void)
                 gBattleScripting.getexpState = 5;
                 gBattleMoveDamage = 0; // used for exp
             }
-            else if (level == MAX_LEVEL)
+            else if (level == MAX_LEVEL || (GameVersionReverse() && level < 2))
             {
                 *(&gBattleStruct->sentInPokes) >>= 1;
                 gBattleScripting.getexpState = 5;
@@ -3406,6 +3394,8 @@ static void Cmd_getexp(void)
                         gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
                     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
                         gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
+                    if (GameVersionReverse())
+                        gBattleMoveDamage *= REVERSE_VERSION_EXP_MULTIPLIER;
 
                     if (IsTradedMon(&gPlayerParty[gBattleStruct->expGetterMonId]))
                     {
@@ -3438,6 +3428,14 @@ static void Cmd_getexp(void)
                     else
                     {
                         gBattleStruct->expGetterBattlerId = 0;
+                    }
+
+                    // Dont Overflow EXP
+                    if (GameVersionReverse())
+                    {
+                        s32 exp = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_EXP);
+                        if (gBattleMoveDamage > exp)
+                            gBattleMoveDamage = (exp - 1); // stop at level 1 (1 exp)
                     }
 
                     PREPARE_MON_NICK_WITH_PREFIX_BUFFER(gBattleTextBuff1, gBattleStruct->expGetterBattlerId, gBattleStruct->expGetterMonId);
@@ -5670,6 +5668,8 @@ static void Cmd_getmoneyreward(void)
     AddMoney(&gSaveBlock1Ptr->money, moneyReward);
     PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff1, 5, moneyReward);
 
+    // Also apply COIN interest after each battle
+    ApplyCoinInterest();
     gBattlescriptCurrInstr++;
 }
 
@@ -6540,7 +6540,7 @@ static void Cmd_setprotectlike(void)
     if (gCurrentTurnActionNumber == (gBattlersCount - 1))
         notLastTurn = FALSE;
 
-    if (sProtectSuccessRates[gDisableStructs[gBattlerAttacker].protectUses] >= Random() && notLastTurn)
+    if (sProtectSuccessRates[gDisableStructs[gBattlerAttacker].protectUses] >= RandomOrActiveBattler(99,0) && notLastTurn)
     {
         if (gBattleMoves[gCurrentMove].effect == EFFECT_PROTECT)
         {
@@ -7173,9 +7173,9 @@ static void Cmd_setmultihitcounter(void)
     }
     else
     {
-        gMultiHitCounter = Random() & 3;
+        gMultiHitCounter = RandomOr(1) & 3;
         if (gMultiHitCounter > 1)
-            gMultiHitCounter = (Random() & 3) + 2;
+            gMultiHitCounter = (RandomOrBattleTarget(3,0) & 3) + 2;
         else
             gMultiHitCounter += 2;
     }
@@ -7198,7 +7198,7 @@ static bool8 TryDoForceSwitchOut(void)
     }
     else
     {
-        u16 random = Random() & 0xFF;
+        u16 random = RandomOrBattleTarget(0,0xFF) & 0xFF;
         if ((u32)((random * (gBattleMons[gBattlerAttacker].level + gBattleMons[gBattlerTarget].level) >> 8) + 1) <= (gBattleMons[gBattlerTarget].level / 4))
         {
             gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
@@ -7506,7 +7506,7 @@ static void Cmd_tryKO(void)
         if (!(gStatuses3[gBattlerTarget] & STATUS3_ALWAYS_HITS))
         {
             chance = gBattleMoves[gCurrentMove].accuracy + (gBattleMons[gBattlerAttacker].level - gBattleMons[gBattlerTarget].level);
-            if (Random() % 100 + 1 < chance && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level)
+            if (RandomOrBattleTarget(0,99) % 100 + 1 < chance && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level)
                 chance = TRUE;
             else
                 chance = FALSE;
@@ -7519,7 +7519,7 @@ static void Cmd_tryKO(void)
         else
         {
             chance = gBattleMoves[gCurrentMove].accuracy + (gBattleMons[gBattlerAttacker].level - gBattleMons[gBattlerTarget].level);
-            if (Random() % 100 + 1 < chance && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level)
+            if (RandomOrBattleTarget(0,99) % 100 + 1 < chance && gBattleMons[gBattlerAttacker].level >= gBattleMons[gBattlerTarget].level)
                 chance = TRUE;
             else
                 chance = FALSE;
@@ -7916,7 +7916,7 @@ static void Cmd_psywavedamageeffect(void)
 {
     s32 randDamage;
 
-    while ((randDamage = Random() % 16) > 10);
+    while ((randDamage = RandomOrBattleTarget(10,0) % 16) > 10);
 
     randDamage *= 10;
     gBattleMoveDamage = gBattleMons[gBattlerAttacker].level * (randDamage + 50) / 100;
@@ -7987,7 +7987,7 @@ static void Cmd_disablelastusedattack(void)
         PREPARE_MOVE_BUFFER(gBattleTextBuff1, gBattleMons[gBattlerTarget].moves[i])
 
         gDisableStructs[gBattlerTarget].disabledMove = gBattleMons[gBattlerTarget].moves[i];
-        gDisableStructs[gBattlerTarget].disableTimer = (Random() & 3) + 2;
+        gDisableStructs[gBattlerTarget].disableTimer = (RandomOrBattleTarget(3,0) & 3) + 2;
         gDisableStructs[gBattlerTarget].disableTimerStartValue = gDisableStructs[gBattlerTarget].disableTimer; // used to save the random amount of turns?
         gBattlescriptCurrInstr += 5;
     }
@@ -8019,7 +8019,7 @@ static void Cmd_trysetencore(void)
     {
         gDisableStructs[gBattlerTarget].encoredMove = gBattleMons[gBattlerTarget].moves[i];
         gDisableStructs[gBattlerTarget].encoredMovePos = i;
-        gDisableStructs[gBattlerTarget].encoreTimer = (Random() & 3) + 3;
+        gDisableStructs[gBattlerTarget].encoreTimer = (RandomOrBattleTarget(3,0) & 3) + 3;
         gDisableStructs[gBattlerTarget].encoreTimerStartValue = gDisableStructs[gBattlerTarget].encoreTimer;
         gBattlescriptCurrInstr += 5;
     }
@@ -8313,7 +8313,7 @@ static void Cmd_tryspiteppreduce(void)
 
         if (i != MAX_MON_MOVES && gBattleMons[gBattlerTarget].pp[i] > 1)
         {
-            s32 ppToDeduct = (Random() & 3) + 2;
+            s32 ppToDeduct = (RandomOrBattleTarget(3,0) & 3) + 2;
             if (gBattleMons[gBattlerTarget].pp[i] < ppToDeduct)
                 ppToDeduct = gBattleMons[gBattlerTarget].pp[i];
 
@@ -8595,7 +8595,7 @@ static void Cmd_friendshiptodamagecalculation(void)
 
 static void Cmd_presentdamagecalculation(void)
 {
-    s32 rand = Random() & 0xFF;
+    s32 rand = RandomOrBattleTarget(200, 205) & 0xFF;
 
     if (rand < 102)
     {
@@ -8652,7 +8652,7 @@ static void Cmd_setsafeguard(void)
 
 static void Cmd_magnitudedamagecalculation(void)
 {
-    s32 magnitude = Random() % 100;
+    s32 magnitude = RandomOrBattleTarget(99,0) % 100;
 
     if (magnitude < 5)
     {
@@ -10306,4 +10306,30 @@ static void Cmd_trainerslideout(void)
     MarkBattlerForControllerExec(gActiveBattler);
 
     gBattlescriptCurrInstr += 2;
+}
+
+// If Unlucky mode is not active, will simply return the result of Random().
+// Otherwise, it will return either the player or ai result instead, depending
+//   on which is the active battler.
+u16 RandomOrActiveBattler(u16 playerResult, u16 aiResult)
+{
+    if (!GameVersionUnlucky())
+        return Random();
+    else if (GetBattlerSide(gActiveBattler) == B_SIDE_PLAYER)
+        return playerResult;
+    else
+        return aiResult;
+}
+
+// If Unlucky mode is not active, will simply return the result of Random().
+// Otherwise, it will return either the player or ai result instead, depending
+//   on which is currently being targeted
+u16 RandomOrBattleTarget(u16 playerTargetResult, u16 aiTargetResult)
+{
+    if (!GameVersionUnlucky())
+        return Random();
+    else if (GetBattlerSide(gBattlerTarget) == B_SIDE_PLAYER)
+        return playerTargetResult;
+    else
+        return aiTargetResult;
 }

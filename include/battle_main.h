@@ -23,8 +23,9 @@ struct MultiPartnerMenuPokemon
 };
 
 // defines for the u8 array gTypeEffectiveness
-#define TYPE_EFFECT_ATK_TYPE(i) ((gTypeEffectiveness[i + 0]))
-#define TYPE_EFFECT_DEF_TYPE(i) ((gTypeEffectiveness[i + 1]))
+u8 GetTypeEffectivenessByte(u16 index, u8 offset);
+#define TYPE_EFFECT_ATK_TYPE(i) (GetTypeEffectivenessByte(i, 0))
+#define TYPE_EFFECT_DEF_TYPE(i) (GetTypeEffectivenessByte(i, 1))
 #define TYPE_EFFECT_MULTIPLIER(i) ((gTypeEffectiveness[i + 2]))
 
 // defines for the gTypeEffectiveness multipliers

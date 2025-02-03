@@ -133,6 +133,14 @@ LilycoveCity_EventScript_FatMan::
 	msgbox LilycoveCity_Text_SawTallTowerOnRoute131, MSGBOX_NPC
 	end
 
+LilycoveCity_EventScript_WinonaFan1::
+	msgbox LilycoveCity_Text_WinonaFan1, MSGBOX_NPC
+	end
+
+LilycoveCity_EventScript_WinonaFan2::
+	msgbox LilycoveCity_Text_WinonaFan2, MSGBOX_NPC
+	end
+
 LilycoveCity_EventScript_Man1::
 	lockall
 	msgbox LilycoveCity_Text_JustArrivedAndSawRarePokemon, MSGBOX_NPC
@@ -743,6 +751,14 @@ LilycoveCity_Text_SawTallTowerOnRoute131:
 	.string "I saw this tall tower somewhere\n"
 	.string "around ROUTE 131.\p"
 	.string "Could that possibly be…?$"
+
+LilycoveCity_Text_WinonaFan1:
+	.string "Leader Winona is so cool,\n"
+	.string "I wanna be just like her!$"
+
+LilycoveCity_Text_WinonaFan2:
+	.string "We're holding a cosplay event\n"
+	.string "about our favorite gym leader!$"
 
 LilycoveCity_Text_JustArrivedAndSawRarePokemon:
 	.string "We just arrived here on our\n"

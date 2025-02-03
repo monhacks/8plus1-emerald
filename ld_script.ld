@@ -761,7 +761,7 @@ SECTIONS {
         sound/songs/midi/se_truck_unload.o(.rodata);
         sound/songs/midi/se_truck_door.o(.rodata);
         sound/songs/midi/se_berry_blender.o(.rodata);
-        sound/songs/midi/se_card.o(.rodata);
+        sound/songs/se_jumpscare.o(.rodata);
         sound/songs/midi/se_save.o(.rodata);
         sound/songs/midi/se_ball_bounce_1.o(.rodata);
         sound/songs/midi/se_ball_bounce_2.o(.rodata);

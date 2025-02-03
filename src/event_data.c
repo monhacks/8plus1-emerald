@@ -1,6 +1,7 @@
 #include "global.h"
 #include "event_data.h"
 #include "pokedex.h"
+#include "constants/pokemon.h"
 
 #define SPECIAL_FLAGS_SIZE  (NUM_SPECIAL_FLAGS / 8)  // 8 flags per byte
 #define TEMP_FLAGS_SIZE     (NUM_TEMP_FLAGS / 8)
@@ -28,6 +29,19 @@ EWRAM_DATA u16 gSpecialVar_Unused_0x8014 = 0;
 EWRAM_DATA static u8 sSpecialFlags[SPECIAL_FLAGS_SIZE] = {0};
 
 extern u16 *const gSpecialVars[];
+
+
+const u16 sLevelCapFlags[NUM_LEVEL_CAPS] = {
+    FLAG_BADGE01_GET, FLAG_BADGE02_GET, FLAG_BADGE03_GET, FLAG_BADGE04_GET,
+    FLAG_BADGE05_GET, FLAG_BADGE06_GET, FLAG_BADGE07_GET, FLAG_BADGE08_GET,
+    FLAG_DEFEATED_ELITE_4_SIDNEY, FLAG_DEFEATED_ELITE_4_PHOEBE,
+    FLAG_DEFEATED_ELITE_4_GLACIA, FLAG_DEFEATED_ELITE_4_DRAKE,
+    FLAG_IS_CHAMPION,
+};
+
+const u16 sLevelCaps[NUM_LEVEL_CAPS] = {
+    15, 19, 24, 29, 31, 33, 42, 46, 49, 51, 53, 55, 58
+};
 
 void InitEventData(void)
 {
@@ -230,4 +244,17 @@ bool8 FlagGet(u16 id)
         return FALSE;
 
     return TRUE;
+}
+
+// Get the current level cap
+u16 GetLevelCap()
+{
+    u8 i;
+    for (i=0; i < NUM_LEVEL_CAPS; ++i)
+        // Search the flags until we find the first un-set one
+        if (!FlagGet(sLevelCapFlags[i]))
+            return sLevelCaps[i];
+
+    // All level caps reached, there is no more cap
+    return MAX_LEVEL;
 }

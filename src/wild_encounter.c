@@ -300,7 +300,7 @@ static u8 ChooseWildMonLevel(const struct WildPokemon *wildPokemon)
                 rand--;
         }
     }
-    return min + rand;
+    return GetWildPokemonLevel(min + rand);
 }
 
 static u16 GetCurrentMapWildMonHeaderId(void)
@@ -495,7 +495,7 @@ static bool8 DoMassOutbreakEncounterTest(void)
 
 static bool8 EncounterOddsCheck(u16 encounterRate)
 {
-    if (Random() % MAX_ENCOUNTER_RATE < encounterRate)
+    if (RandomOr(0) % MAX_ENCOUNTER_RATE < encounterRate)
         return TRUE;
     else
         return FALSE;
@@ -535,7 +535,7 @@ static bool8 WildEncounterCheck(u32 encounterRate, bool8 ignoreAbility)
 // skips the wild encounter check entirely.
 static bool8 AllowWildCheckOnNewMetatile(void)
 {
-    if (Random() % 100 >= 60)
+    if (RandomOr(0) % 100 >= 60)
         return FALSE;
     else
         return TRUE;
@@ -861,7 +861,7 @@ bool8 UpdateRepelCounter(void)
 
     steps = VarGet(VAR_REPEL_STEP_COUNT);
 
-    if (steps != 0)
+    if (steps != 0 && (steps != 255 || GameVersionMarathon()))
     {
         steps--;
         VarSet(VAR_REPEL_STEP_COUNT, steps);

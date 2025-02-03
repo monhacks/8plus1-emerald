@@ -935,6 +935,8 @@ extern const u8 gText_BootedUpTM[];
 extern const u8 gText_TMHMContainedVar1[];
 extern const u8 gText_PlayerUsedVar2[];
 extern const u8 gText_RepelEffectsLingered[];
+extern const u8 gText_WearingCologne[];
+extern const u8 gText_RemovingCologne[];
 extern const u8 gText_UsedVar2WildLured[];
 extern const u8 gText_UsedVar2WildRepelled[];
 extern const u8 gText_BoxFull[];
@@ -2048,6 +2050,7 @@ extern const u8 gPCText_Pokecenter[];
 extern const u8 gPCText_Machine[];
 extern const u8 gPCText_Simple[];
 extern const u8 gText_PartyFull[];
+extern const u8 gText_PCIsntWorking[];
 extern const u8 gText_Box[];
 extern const u8 gText_JustOnePkmn[];
 

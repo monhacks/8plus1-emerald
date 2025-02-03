@@ -1163,16 +1163,25 @@ static void Task_GiveExpToMon(u8 taskId)
         struct Pokemon *mon = &gPlayerParty[monId];
         u16 species = GetMonData(mon, MON_DATA_SPECIES);
         u8 level = GetMonData(mon, MON_DATA_LEVEL);
-        u32 currExp = GetMonData(mon, MON_DATA_EXP);
-        u32 nextLvlExp = gExperienceTables[gSpeciesInfo[species].growthRate][level + 1];
+        s32 currExp = GetMonData(mon, MON_DATA_EXP);
+        s32 nextLvlExp = gExperienceTables[gSpeciesInfo[species].growthRate][level + 1];
+        s32 prevLvlExp = gExperienceTables[gSpeciesInfo[species].growthRate][level] - 1;
+     
 
-        if (currExp + gainedExp >= nextLvlExp)
+        if ((!GameVersionReverse() && currExp + gainedExp >= nextLvlExp) || (GameVersionReverse() && currExp - gainedExp <= prevLvlExp))
         {
             u8 savedActiveBattler;
-
-            SetMonData(mon, MON_DATA_EXP, &nextLvlExp);
+            if (GameVersionReverse())
+            {
+                SetMonData(mon, MON_DATA_EXP, &prevLvlExp);
+                gainedExp -= currExp - prevLvlExp;
+            }
+            else
+            {
+                SetMonData(mon, MON_DATA_EXP, &nextLvlExp);
+                gainedExp -= nextLvlExp - currExp;
+            }
             CalculateMonStats(mon);
-            gainedExp -= nextLvlExp - currExp;
             savedActiveBattler = gActiveBattler;
             gActiveBattler = battlerId;
             BtlController_EmitTwoReturnValues(BUFFER_B, RET_VALUE_LEVELED_UP, gainedExp);
@@ -1186,7 +1195,10 @@ static void Task_GiveExpToMon(u8 taskId)
         }
         else
         {
-            currExp += gainedExp;
+            if (GameVersionReverse())
+                currExp -= gainedExp;
+            else
+                currExp += gainedExp;
             SetMonData(mon, MON_DATA_EXP, &currExp);
             gBattlerControllerFuncs[battlerId] = CompleteOnInactiveTextPrinter;
             DestroyTask(taskId);
@@ -1212,7 +1224,8 @@ static void Task_PrepareToGiveExpWithExpBar(u8 taskId)
 
     exp -= currLvlExp;
     expToNextLvl = gExperienceTables[gSpeciesInfo[species].growthRate][level + 1] - currLvlExp;
-    SetBattleBarStruct(battlerId, gHealthboxSpriteIds[battlerId], expToNextLvl, exp, -gainedExp);
+    // Exp gained is actually reported as a -exp, so we need to return a positive value in reverse mode.
+    SetBattleBarStruct(battlerId, gHealthboxSpriteIds[battlerId], expToNextLvl, exp, (GameVersionReverse())? gainedExp: -gainedExp);
     PlaySE(SE_EXP);
     gTasks[taskId].func = Task_GiveExpWithExpBar;
 }
@@ -1237,21 +1250,30 @@ static void Task_GiveExpWithExpBar(u8 taskId)
             u8 level;
             s32 currExp;
             u16 species;
-            s32 expOnNextLvl;
+            s32 expOnNextLvl, prevLvlExp;
 
             m4aSongNumStop(SE_EXP);
             level = GetMonData(&gPlayerParty[monId], MON_DATA_LEVEL);
             currExp = GetMonData(&gPlayerParty[monId], MON_DATA_EXP);
             species = GetMonData(&gPlayerParty[monId], MON_DATA_SPECIES);
             expOnNextLvl = gExperienceTables[gSpeciesInfo[species].growthRate][level + 1];
+            prevLvlExp = gExperienceTables[gSpeciesInfo[species].growthRate][level] - 1;
 
-            if (currExp + gainedExp >= expOnNextLvl)
+
+            if ((!GameVersionReverse() && currExp + gainedExp >= expOnNextLvl) || (GameVersionReverse() && currExp - gainedExp <= prevLvlExp))
             {
                 u8 savedActiveBattler;
-
-                SetMonData(&gPlayerParty[monId], MON_DATA_EXP, &expOnNextLvl);
+                if (GameVersionReverse())
+                {
+                    SetMonData(&gPlayerParty[monId], MON_DATA_EXP, &prevLvlExp);
+                    gainedExp -= currExp - prevLvlExp;
+                }
+                else
+                {
+                    SetMonData(&gPlayerParty[monId], MON_DATA_EXP, &expOnNextLvl);
+                    gainedExp -= expOnNextLvl - currExp;
+                }
                 CalculateMonStats(&gPlayerParty[monId]);
-                gainedExp -= expOnNextLvl - currExp;
                 savedActiveBattler = gActiveBattler;
                 gActiveBattler = battlerId;
                 BtlController_EmitTwoReturnValues(BUFFER_B, RET_VALUE_LEVELED_UP, gainedExp);
@@ -1260,7 +1282,10 @@ static void Task_GiveExpWithExpBar(u8 taskId)
             }
             else
             {
-                currExp += gainedExp;
+                if (GameVersionReverse())
+                    currExp -= gainedExp;
+                else
+                    currExp += gainedExp;
                 SetMonData(&gPlayerParty[monId], MON_DATA_EXP, &currExp);
                 gBattlerControllerFuncs[battlerId] = CompleteOnInactiveTextPrinter;
                 DestroyTask(taskId);

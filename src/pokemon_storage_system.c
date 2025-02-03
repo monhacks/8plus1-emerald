@@ -1599,6 +1599,13 @@ static void Task_PCMainMenu(u8 taskId)
                 AddTextPrinterParameterized2(0, FONT_NORMAL, gText_JustOnePkmn, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
                 task->tState = STATE_ERROR_MSG;
             }
+            else if (GameVersionMarathon() && (task->tInput == OPTION_WITHDRAW || task->tInput == OPTION_MOVE_MONS))
+            {
+                // Not allowed to withdraw
+                FillWindowPixelBuffer(0, PIXEL_FILL(1));
+                AddTextPrinterParameterized2(0, FONT_NORMAL, gText_PCIsntWorking, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+                task->tState = STATE_ERROR_MSG;
+            }
             else
             {
                 // Enter PC
@@ -6363,9 +6370,9 @@ static void SetMovingMonData(u8 boxId, u8 position)
         // When retrieving a pokemon from a box, make sure its not healthy
         if (GameVersionRude()) {
             u32 status = (Random() % RUDE_STATUS_CHANCE_ON_HEAL)? 0 : ShouldApplyStatusOnHeal(MAPSEC_NONE);
-            u16 hp = 1;
+            //u16 hp = 1;
             SetMonData(&sStorage->movingMon, MON_DATA_STATUS, &status);
-            SetMonData(&sStorage->movingMon, MON_DATA_HP, &hp);
+            //SetMonData(&sStorage->movingMon, MON_DATA_HP, &hp);
         }
     }
 

@@ -373,6 +373,11 @@ static const u8 sRepelDesc[] = _(
     "POKéMON for 100\n"
     "steps.");
 
+static const u8 sCologneDesc[] = _(
+    "Dad's extra fancy\n"
+    "Cologne. It smells\n"
+    "terrible...");
+
 // Evolution stones
 static const u8 sSunStoneDesc[] = _(
     "Makes certain\n"
@@ -989,8 +994,9 @@ static const u8 sMachBikeDesc[] = _(
     "speed or better.");
 
 static const u8 sCoinCaseDesc[] = _(
-    "A case that holds\n"
-    "up to 9,999 COINS.");
+    "A digital wallet\n"
+    "that can hold\n"
+    "up to 9,999 COIN.");
 
 static const u8 sItemfinderDesc[] = _(
     "A device that\n"

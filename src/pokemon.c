@@ -72,6 +72,7 @@ static bool8 ShouldGetStatBadgeBoost(u16 flagId, u8 battlerId);
 static u16 GiveMoveToBoxMon(struct BoxPokemon *boxMon, u16 move);
 static bool8 ShouldSkipFriendshipChange(void);
 static u8 CopyMonToPC(struct Pokemon *mon);
+static void GiveSketchyMovesToCaughtMon(struct BoxPokemon *boxMon);
 
 EWRAM_DATA static u8 sLearningMoveTableID = 0;
 EWRAM_DATA u8 gPlayerPartyCount = 0;
@@ -2274,7 +2275,7 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     else
     {
         u32 iv;
-        value = Random();
+        value = RandomOr(0);
 
         iv = value & MAX_IV_MASK;
         SetBoxMonData(boxMon, MON_DATA_HP_IV, &iv);
@@ -2283,7 +2284,7 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
         iv = (value & (MAX_IV_MASK << 10)) >> 10;
         SetBoxMonData(boxMon, MON_DATA_DEF_IV, &iv);
 
-        value = Random();
+        value = RandomOr(0);
 
         iv = value & MAX_IV_MASK;
         SetBoxMonData(boxMon, MON_DATA_SPEED_IV, &iv);
@@ -3014,7 +3015,7 @@ void GiveBoxMonInitialMoveset(struct BoxPokemon *boxMon)
         if (moveLevel > (level << 9))
             break;
 
-        if (GameVersionHiddenPower())
+        if (GameVersionHiddenPower() && !GameVersionRainbow())
             // Mons can only learn hidden power
             move = MOVE_HIDDEN_POWER;
         else
@@ -3051,8 +3052,11 @@ u16 MonTryLearningNewMove(struct Pokemon *mon, bool8 firstMove)
     if ((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_LV) == (level << 9))
     {
         // If there is a level up move, replace it as appropriate
+        // Default to hidden power if multiple are avaliable
         if (GameVersionHiddenPower())
             gMoveToLearn = MOVE_HIDDEN_POWER;
+        else if (GameVersionSketchy())
+            gMoveToLearn = MOVE_SKETCH;
         else
             gMoveToLearn = ReplaceLevelUpMove((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_ID), species);
         sLearningMoveTableID++;
@@ -4421,6 +4425,10 @@ u8 GiveMonToPlayer(struct Pokemon *mon)
     SetMonData(mon, MON_DATA_OT_NAME, gSaveBlock2Ptr->playerName);
     SetMonData(mon, MON_DATA_OT_GENDER, &gSaveBlock2Ptr->playerGender);
     SetMonData(mon, MON_DATA_OT_ID, gSaveBlock2Ptr->playerTrainerId);
+
+    // Replace the moves once the mon is in the party
+    if (GameVersionSketchy())
+        GiveSketchyMovesToCaughtMon(&mon->box);
 
     for (i = 0; i < PARTY_SIZE; i++)
     {
@@ -6332,7 +6340,6 @@ u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves)
     for (i = 0; i < MAX_LEVEL_UP_MOVES; i++)
     {
         u16 moveLevel;
-
         if (gLevelUpLearnsets[species][i] == LEVEL_UP_END)
             break;
 
@@ -6340,16 +6347,25 @@ u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves)
 
         if (moveLevel <= (level << 9))
         {
-            for (j = 0; j < MAX_MON_MOVES && learnedMoves[j] != (gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID); j++)
+            u16 move;
+            // Default to Sketchy if more than one is enabled
+            if (GameVersionSketchy())
+                move = MOVE_SKETCH;
+            else if (GameVersionHiddenPower())
+                move = MOVE_HIDDEN_POWER;
+            else
+                move = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
+
+            for (j = 0; j < MAX_MON_MOVES && learnedMoves[j] != move; j++)
                 ;
 
             if (j == MAX_MON_MOVES)
             {
-                for (k = 0; k < numMoves && moves[k] != (gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID); k++)
+                for (k = 0; k < numMoves && moves[k] != move; k++)
                     ;
 
                 if (k == numMoves)
-                    moves[numMoves++] = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
+                    moves[numMoves++] = move;
             }
         }
     }
@@ -6394,16 +6410,25 @@ u8 GetNumberOfRelearnableMoves(struct Pokemon *mon)
 
         if (moveLevel <= (level << 9))
         {
-            for (j = 0; j < MAX_MON_MOVES && learnedMoves[j] != (gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID); j++)
+            u16 move;
+            // Default to sketchy if multiple enabled
+            if (GameVersionSketchy())
+                move = MOVE_SKETCH;
+            else if (GameVersionHiddenPower())
+                move = MOVE_HIDDEN_POWER;
+            else
+                move = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
+
+            for (j = 0; j < MAX_MON_MOVES && learnedMoves[j] != move; j++)
                 ;
 
             if (j == MAX_MON_MOVES)
             {
-                for (k = 0; k < numMoves && moves[k] != (gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID); k++)
+                for (k = 0; k < numMoves && moves[k] != move; k++)
                     ;
 
                 if (k == numMoves)
-                    moves[numMoves++] = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
+                    moves[numMoves++] = move;
             }
         }
     }
@@ -7199,5 +7224,43 @@ u8 *MonSpritesGfxManager_GetSpritePtr(u8 managerId, u8 spriteNum)
             spriteNum = 0;
 
         return gfx->spritePointers[spriteNum];
+    }
+}
+
+/*
+// Replace a pokemon's moveset with "sketch" moves (1st move is Tackle, every other existing move is Sketch)
+static void GiveSketchyMovesToCaughtMon(struct BoxPokemon *boxMon)
+{
+    s32 i;
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        u16 existingMove = GetBoxMonData(boxMon, MON_DATA_MOVE1 + i, NULL);
+        if (existingMove != MOVE_NONE)
+        {
+            // First move is tackle, everything else is sketch
+            u16 move = (i == 0)? MOVE_TACKLE : MOVE_SKETCH;
+
+            SetBoxMonData(boxMon, MON_DATA_MOVE1 + i, &move);
+            SetBoxMonData(boxMon, MON_DATA_PP1 + i, &gBattleMoves[move].pp);
+        } 
+        else break; // Stop once we've seen all the moves
+    }
+}
+*/
+
+// Replace a pokemon's moveset with "sketchy" moves (Tackle + Sketch)
+static void GiveSketchyMovesToCaughtMon(struct BoxPokemon *boxMon)
+{
+    s32 i;
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        u16 move = MOVE_NONE;
+        if (i == 0)
+            move = MOVE_TACKLE;
+        else if (i == 1)
+            move = MOVE_SKETCH;
+
+        SetBoxMonData(boxMon, MON_DATA_MOVE1 + i, &move);
+        SetBoxMonData(boxMon, MON_DATA_PP1 + i, &gBattleMoves[move].pp);
     }
 }

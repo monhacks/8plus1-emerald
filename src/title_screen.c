@@ -205,6 +205,31 @@ static const struct CompressedSpriteSheet sSpriteSheet_Version[] =
         .size = 0x1000,
         .tag = TAG_VERSION
     },
+    {
+        .data = gTitleScreenEmeraldVersion5Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
+    {
+        .data = gTitleScreenEmeraldVersion6Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
+    {
+        .data = gTitleScreenEmeraldVersion7Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
+    {
+        .data = gTitleScreenEmeraldVersion8Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
+    {
+        .data = gTitleScreenEmeraldVersion9Gfx,
+        .size = 0x1000,
+        .tag = TAG_VERSION
+    },
 };
 
 static const struct OamData sOamData_CopyrightBanner =

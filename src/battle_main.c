@@ -697,7 +697,8 @@ static void CB2_InitBattleInternal(void)
     {
         CreateNPCTrainerParty(&gEnemyParty[0], gTrainerBattleOpponent_A, TRUE);
         if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS)
-            CreateNPCTrainerParty(&gEnemyParty[PARTY_SIZE / 2], gTrainerBattleOpponent_B, FALSE);
+            CreateNPCTrainerParty(&gEnemyParty[PARTY_SIZE / 2], gTrainerBattleOpponent_B, FALSE);    
+        ClearJumpscare(); // Jumpscare initialized, clear the flag.
         SetWildMonHeldItem();
     }
 
@@ -2029,7 +2030,7 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
                 level = GetTrainerPokemonLevel(partyData[i].lvl, gTrainers[trainerNum].trainerClass);
                 CreateMon(&party[i], partyData[i].species, level, fixedIV, TRUE, personalityValue, OT_ID_RANDOM_NO_SHINY, 0);
 
-                if (GameVersionHiddenPower())
+                if (GameVersionHiddenPower() && !GameVersionRainbow())
                 {
                     // Trainers with custom movesets have max pp hidden power
                     u16 move = MOVE_HIDDEN_POWER;
@@ -2075,7 +2076,7 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
 
                 SetMonData(&party[i], MON_DATA_HELD_ITEM, &partyData[i].heldItem);
 
-                if (GameVersionHiddenPower())
+                if (GameVersionHiddenPower() && !GameVersionRainbow())
                 {
                     // Trainers with custom movesets have max pp hidden power
                     u16 move = MOVE_HIDDEN_POWER;
@@ -2092,6 +2093,22 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
 
                 break;
             }
+            }
+    
+            if (IsJumpscareBattle() && i == 0)
+            {
+                // Give the trainer's first pokemon self destruct/explosion, depending on level.
+                u16 move = (level < 40)? MOVE_SELF_DESTRUCT : MOVE_EXPLOSION;
+                SetMonData(&party[i], MON_DATA_MOVE1, &move);
+                SetMonData(&party[i], MON_DATA_PP1, &gBattleMoves[move].pp);
+
+                // Set the other moves to NONE
+                move = MOVE_NONE;
+                for (j = 1; j < MAX_MON_MOVES; j++)
+                {
+                    SetMonData(&party[i], MON_DATA_MOVE1 + j, &move);
+                    SetMonData(&party[i], MON_DATA_PP1 + j, &gBattleMoves[move].pp);
+                }
             }
         }
 
@@ -5294,4 +5311,11 @@ void RunBattleScriptCommands(void)
 {
     if (gBattleControllerExecFlags == 0)
         gBattleScriptingCommandsTable[gBattlescriptCurrInstr[0]]();
+}
+
+// Get a specific entry in the type effectiveness table
+u8 GetTypeEffectivenessByte(u16 index, u8 offset) {
+    if (GameVersionReverse())
+        offset = offset ? 0 : 1; // flip the attack type/defense type to invert the type chart
+    return gTypeEffectiveness[index + offset];
 }

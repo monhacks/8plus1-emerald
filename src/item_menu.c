@@ -999,7 +999,11 @@ static void PrintItemDescription(int itemIndex)
     const u8 *str;
     if (itemIndex != LIST_CANCEL)
     {
-        str = ItemId_GetDescription(BagGetItemIdByPocketPosition(gBagPosition.pocket + 1, itemIndex));
+        u16 itemID = BagGetItemIdByPocketPosition(gBagPosition.pocket + 1, itemIndex);
+        if (GameVersionObfuscated() && ITEM_TM01 <= itemID &&  itemID < ITEM_HM01)
+            str = sFakeMoveDescription; // obfuscate tms
+        else
+            str = ItemId_GetDescription(itemID);
     }
     else
     {

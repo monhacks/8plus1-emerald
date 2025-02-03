@@ -3926,8 +3926,8 @@ u8 IsMonDisobedient(void)
         if (gBattleTypeFlags & BATTLE_TYPE_RECORDED)
             return 0;
 
-        // If we are in Hidden Power Mode, the pokemon will always disobey and use hidden power instead
-        if (!GameVersionHiddenPower()) {
+        // If we are in Hidden Power Mode (and not rainbow), the pokemon will always disobey and use hidden power instead
+        if (!GameVersionHiddenPower() || GameVersionRainbow()) {
             if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER && GetBattlerPosition(gBattlerAttacker) == 2)
                 return 0;
             if (!IsOtherTrainer(gBattleMons[gBattlerAttacker].otId, gBattleMons[gBattlerAttacker].otName))
@@ -3950,7 +3950,7 @@ u8 IsMonDisobedient(void)
         return 0;
     rnd = (Random() & 255);
     calc = (gBattleMons[gBattlerAttacker].level + obedienceLevel) * rnd >> 8;
-    if (calc < obedienceLevel && !GameVersionHiddenPower())
+    if (calc < obedienceLevel && (!GameVersionHiddenPower() || GameVersionRainbow()))
         return 0;
 
     // is not obedient
@@ -3962,9 +3962,9 @@ u8 IsMonDisobedient(void)
         return 1;
     }
 
-    if (GameVersionHiddenPower()) {
+    if (GameVersionHiddenPower() && !GameVersionRainbow()) {
         // Execute Hidden Power instead of whatever other move
-        // Note: by not adjusting gCurrMovePos it should hopefully still deduct Move PP
+        // Note: by not adjusting gCurrMovePos it will still deduct Move PP
         if (gCurrentMove == MOVE_HIDDEN_POWER)
             return 0;
 
