@@ -7173,11 +7173,21 @@ static void Cmd_setmultihitcounter(void)
     }
     else
     {
-        gMultiHitCounter = RandomOr(1) & 3;
+        gMultiHitCounter = Random() & 3;
         if (gMultiHitCounter > 1)
-            gMultiHitCounter = (RandomOrBattleTarget(3,0) & 3) + 2;
+            gMultiHitCounter = (Random() & 3) + 2;
         else
             gMultiHitCounter += 2;
+
+        // If unlucky version, we adjust the multihit amount
+        if (GameVersionUnlucky())
+        {
+            if (GetBattlerSide(gBattlerTarget) == B_SIDE_PLAYER)
+                gMultiHitCounter++;
+            else
+                gMultiHitCounter--;
+        }
+            
     }
 
     gBattlescriptCurrInstr += 2;
@@ -9975,6 +9985,10 @@ static void Cmd_handleballthrow(void)
             odds *= 2;
         if (gBattleMons[gBattlerTarget].status1 & (STATUS1_POISON | STATUS1_BURN | STATUS1_PARALYSIS | STATUS1_TOXIC_POISON))
             odds = (odds * 15) / 10;
+
+        // Reduce the catch odds in unlucky version
+        if (GameVersionUnlucky())
+            odds /= 4;
 
         if (gLastUsedItem != ITEM_SAFARI_BALL)
         {

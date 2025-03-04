@@ -5153,8 +5153,8 @@ static struct Sprite *CreateMonIconSprite(u16 species, u32 personality, s16 x, s
     u8 spriteId;
     struct SpriteTemplate template = sSpriteTemplate_MonIcon;
 
+    template.paletteTag = PALTAG_MON_ICON_0 + gMonIconPaletteIndices[ObfuscateSpecies(species)];
     species = GetIconSpecies(species, personality);
-    template.paletteTag = PALTAG_MON_ICON_0 + gMonIconPaletteIndices[species];
     tileNum = TryLoadMonIconTiles(species);
     if (tileNum == 0xFFFF)
         return NULL;
@@ -6369,7 +6369,7 @@ static void SetMovingMonData(u8 boxId, u8 position)
         
         // When retrieving a pokemon from a box, make sure its not healthy
         if (GameVersionRude()) {
-            u32 status = (Random() % RUDE_STATUS_CHANCE_ON_HEAL)? 0 : ShouldApplyStatusOnHeal(MAPSEC_NONE);
+            u32 status = (RandomOr(0) % RUDE_STATUS_CHANCE_ON_HEAL)? 0 : ShouldApplyStatusOnHeal(MAPSEC_NONE);
             //u16 hp = 1;
             SetMonData(&sStorage->movingMon, MON_DATA_STATUS, &status);
             //SetMonData(&sStorage->movingMon, MON_DATA_HP, &hp);

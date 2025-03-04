@@ -1728,6 +1728,16 @@ bool8 ScrCmd_checkpartymove(struct ScriptContext *ctx)
             break;
         }
     }
+
+    // if no party member has the move, allow it if we have the hm
+    if (gSpecialVar_Result == PARTY_SIZE && PlayerHasMove(moveId))
+    {
+        gSpecialVar_Result = 0; // First mon will use the move
+        gSpecialVar_0x8004 = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
+    }
+
+
+
     return FALSE;
 }
 

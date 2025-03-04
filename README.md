@@ -16,9 +16,12 @@ Game Features (Many Spoilers)
  - Added "Rare Candies" key item for reusable rare candy  
  - Added "Tent" key item: It's a portable pokemon center!
  - Added "Dad's Cologne" key item as a toggleable infinite repel.  
+ - Interactable field moves (cutting trees, surfing on water, etc) can be used without teaching them to pokemon.  
  - Made Gambling Illegal, Added Cryptocurrency instead.  
    - After Every Battle, you gain/lose a percentage of your "Coin Wallet"
-   - You can buy items and nfp's from the game corner using COIN. 
+   - You can buy items and nfp's from the game corner using COIN.
+ - Febass is significantly easier to encounter.  
+ - The Postgame Safari Zone expansion is avaliable after Tate&Liza.   
  - Select your Game Version at the title screen (L/R)  
  -  Note: all versions are compatible with each other, and can be swapped by saving and returning to the title scren.  
   
@@ -38,7 +41,7 @@ Game Features (Many Spoilers)
 ## HELL Version:  
  - Difficulty Hack  
  - Every standard trainer is a very agressive spinner.  
- - Non-Boss enemy trainer pokemon are higher level than normal.  
+ - Enemy trainer pokemon are significantly higher level than normal.  
  - Random chance that standard trainers will jumpscare you (increases with level cap)  
    - Pokemon are always at level cap, first mon only knows self-destruct/explosion  
  - Reusable Healing Methods have a chance to status you when used.  
@@ -64,27 +67,34 @@ Game Features (Many Spoilers)
 
 ## IRON Version:  
  - You cannot withdraw pokemon from boxes.  
+ - You cannot use items during trainer battles.  
  - Reusable Healing Methods do not restore PP.  
- - Non-Boss enemy trainer pokemon are higher level than normal.  
+ - Enemy trainer pokemon are higher level than normal.  
  - Wild Pokemon are stronger than normal, and you are not allowed to use the cologne.  
 
 ## HEX Version:  
  - Move Damage, Accuracy, Secondary Effects always result in the worst possible outcome for the player.  
+   - Player Multihit moves hit one time fewer, enemy multihit moves hit one time more.  
  - Critical Hits are impossible (for everybody).  
  - Wild Encounters happen more often.  
  - Wild Pokemon Have 0 IVs.  
- - Reusable Healing Methods have a chance to status you when used.  
+ - Wild Pokemon are harder to catch.  
+ - You will slowly lose COIN.  
+ - Various silly low probability interactions.  
 
 ## RAINBOW Version:
  - Every Single Mechanic is enabled at once.  
  - This version is very cursed
  - Ambiguity Resolution:
-   - Initial moveset is Tackle+Sketch (SKETCHY), Level-up moves are only hidden power (UNKNOWN).
-   - Move Relearner will let you learn Sketch (SKETCHY)
-   - Every battle is a jumpscare (HELL + HEX)
+   - Caught pokemon moveset is HiddenPower + Sketch (UNKNOWN + SKETCHY)  
+   - Enemy non-customized pokemon movesets are randomized (CHAOS)  
+   - Move Relearner will only let you learn Sketch & Hidden Power (UNKNOWN + SKETCHY)  
+   - Every battle is a jumpscare (HELL + HEX)  
+   - Pokemon are always statused when healing. (HELL + HEX)  
+   - Use Iron's enemy level scaling (HELL/IRON)  
  - Changes:  
-   - Pokemon obey as normal (UNKNOWN)
-   - Enemy Pokemon use moves as normal (UNKNOWN)
+   - Pokemon obey as normal (UNKNOWN)  
+   - Enemy Pokemon use moves as normal (UNKNOWN)  
 
 ### Other Info  
 To set up the repository, see [INSTALL.md](INSTALL.md).  

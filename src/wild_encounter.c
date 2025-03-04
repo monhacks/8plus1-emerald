@@ -27,14 +27,14 @@ extern const u8 EventScript_RepelWoreOff[];
 
 #define MAX_ENCOUNTER_RATE 2880
 
-#define NUM_FEEBAS_SPOTS 6
-
 // Number of accessible fishing spots in each section of Route 119
 // Each section is an area of the route between the y coordinates in sRoute119WaterTileData
 #define NUM_FISHING_SPOTS_1 131
 #define NUM_FISHING_SPOTS_2 167
 #define NUM_FISHING_SPOTS_3 149
 #define NUM_FISHING_SPOTS (NUM_FISHING_SPOTS_1 + NUM_FISHING_SPOTS_2 + NUM_FISHING_SPOTS_3)
+
+#define NUM_FEEBAS_SPOTS (NUM_FISHING_SPOTS >> 3)
 
 enum {
     WILD_AREA_LAND,
@@ -135,7 +135,7 @@ static bool8 CheckFeebas(void)
             route119Section = 2;
 
         // 50% chance of encountering Feebas (assuming this is a Feebas spot)
-        if (Random() % 100 > 49)
+        if (GameVersionUnlucky()) // If unlucky, never feebas, otherwise always feebas in feebas spot
             return FALSE;
 
         FeebasSeedRng(gSaveBlock1Ptr->dewfordTrends[0].rand);

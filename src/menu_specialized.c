@@ -756,7 +756,7 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
     const struct BattleMove *move;
     u8 buffer[32];
     const u8 *str;
-    bool8 isSilly = IsMoveSilly(chosenMove);
+    bool8 isSilly;
 
     FillWindowPixelBuffer(RELEARNERWIN_DESC_BATTLE, PIXEL_FILL(1));
     str = gText_MoveRelearnerBattleMoves;
@@ -780,6 +780,7 @@ static void MoveRelearnerLoadBattleMoveDescription(u32 chosenMove)
         return;
     }
     chosenMove = ObfuscateMove(chosenMove);
+    isSilly = IsMoveSilly(chosenMove);
     move = &gBattleMoves[chosenMove];
     str = gTypeNames[move->type];
     AddTextPrinterParameterized(RELEARNERWIN_DESC_BATTLE, FONT_NORMAL, str, 4, 25, TEXT_SKIP_DRAW, NULL);

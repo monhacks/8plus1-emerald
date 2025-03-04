@@ -2320,8 +2320,8 @@ void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV,
         }
         while (nature != GetNatureFromPersonality(personality));
 
-    // Obfuscated game mode gets extra shiny odds (they cant see it)
-    } while (GameVersionObfuscated() && !IsShinyOtIdPersonality(playerOtid, personality) && shinyTries++ < OBFUSCATED_SHINY_RETRIES);
+    // Obfuscated game mode gets extra shiny odds (they cant see it), and so does "unlucky"
+    } while ((GameVersionObfuscated() || GameVersionUnlucky()) && !IsShinyOtIdPersonality(playerOtid, personality) && shinyTries++ < OBFUSCATED_SHINY_RETRIES);
 
     CreateMon(mon, species, level, fixedIV, TRUE, personality, OT_ID_PLAYER_ID, 0);
 }
@@ -3015,12 +3015,7 @@ void GiveBoxMonInitialMoveset(struct BoxPokemon *boxMon)
         if (moveLevel > (level << 9))
             break;
 
-        if (GameVersionHiddenPower() && !GameVersionRainbow())
-            // Mons can only learn hidden power
-            move = MOVE_HIDDEN_POWER;
-        else
-            // Replace level up moves with randomized ones
-            move = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
+        move = ReplaceInitialMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
 
         if (GiveMoveToBoxMon(boxMon, move) == MON_HAS_MAX_MOVES)
             DeleteFirstMoveAndGiveMoveToBoxMon(boxMon, move);
@@ -3052,13 +3047,7 @@ u16 MonTryLearningNewMove(struct Pokemon *mon, bool8 firstMove)
     if ((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_LV) == (level << 9))
     {
         // If there is a level up move, replace it as appropriate
-        // Default to hidden power if multiple are avaliable
-        if (GameVersionHiddenPower())
-            gMoveToLearn = MOVE_HIDDEN_POWER;
-        else if (GameVersionSketchy())
-            gMoveToLearn = MOVE_SKETCH;
-        else
-            gMoveToLearn = ReplaceLevelUpMove((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_ID), species);
+        gMoveToLearn = ReplaceLevelUpMove((gLevelUpLearnsets[species][sLearningMoveTableID] & LEVEL_UP_MOVE_ID), species);
         sLearningMoveTableID++;
         retVal = GiveMoveToMon(mon, gMoveToLearn);
     }
@@ -6326,6 +6315,20 @@ u32 CanSpeciesLearnTMHM(u16 species, u8 tm)
     }
 }
 
+// Get version specific move relearner movesets
+u8 GetSpecialRelearnableMoves(struct Pokemon *mon, u16 *moves)
+{
+    u8 numMoves = 0;
+
+    if (GameVersionSketchy() && !MonKnowsMove(mon, MOVE_SKETCH))
+        moves[numMoves++] = MOVE_SKETCH;
+        
+    if (GameVersionHiddenPower() && !MonKnowsMove(mon, MOVE_HIDDEN_POWER))
+        moves[numMoves++] = MOVE_HIDDEN_POWER;
+
+    return numMoves;
+}
+
 u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves)
 {
     u16 learnedMoves[MAX_MON_MOVES];
@@ -6333,6 +6336,10 @@ u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves)
     u16 species = GetMonData(mon, MON_DATA_SPECIES, 0);
     u8 level = GetMonData(mon, MON_DATA_LEVEL, 0);
     int i, j, k;
+
+    // check for special case movesets
+    if (GameVersionSketchy() || GameVersionHiddenPower())
+        return GetSpecialRelearnableMoves(mon, moves);
 
     for (i = 0; i < MAX_MON_MOVES; i++)
         learnedMoves[i] = GetMonData(mon, MON_DATA_MOVE1 + i, 0);
@@ -6347,19 +6354,13 @@ u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves)
 
         if (moveLevel <= (level << 9))
         {
-            u16 move;
-            // Default to Sketchy if more than one is enabled
-            if (GameVersionSketchy())
-                move = MOVE_SKETCH;
-            else if (GameVersionHiddenPower())
-                move = MOVE_HIDDEN_POWER;
-            else
-                move = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
+            // Randomize the move if appropriate 
+            u16 move = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
 
             for (j = 0; j < MAX_MON_MOVES && learnedMoves[j] != move; j++)
                 ;
 
-            if (j == MAX_MON_MOVES)
+            if ((j == MAX_MON_MOVES))
             {
                 for (k = 0; k < numMoves && moves[k] != move; k++)
                     ;
@@ -6379,6 +6380,7 @@ u8 GetLevelUpMovesBySpecies(u16 species, u16 *moves)
     int i;
 
     for (i = 0; i < MAX_LEVEL_UP_MOVES && gLevelUpLearnsets[species][i] != LEVEL_UP_END; i++)
+        // Used exclusivly in the daycare
          moves[numMoves++] = ReplaceLevelUpMove(gLevelUpLearnsets[species][i] & LEVEL_UP_MOVE_ID, species);
 
      return numMoves;
@@ -6395,6 +6397,10 @@ u8 GetNumberOfRelearnableMoves(struct Pokemon *mon)
 
     if (species == SPECIES_EGG)
         return 0;
+
+    // check for special case movesets
+    if (GameVersionSketchy() || GameVersionHiddenPower())
+        return GetSpecialRelearnableMoves(mon, moves);
 
     for (i = 0; i < MAX_MON_MOVES; i++)
         learnedMoves[i] = GetMonData(mon, MON_DATA_MOVE1 + i, 0);
@@ -7256,7 +7262,7 @@ static void GiveSketchyMovesToCaughtMon(struct BoxPokemon *boxMon)
     {
         u16 move = MOVE_NONE;
         if (i == 0)
-            move = MOVE_TACKLE;
+            move = GameVersionRainbow()? MOVE_HIDDEN_POWER: MOVE_TACKLE;
         else if (i == 1)
             move = MOVE_SKETCH;
 

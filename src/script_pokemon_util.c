@@ -57,7 +57,7 @@ void HealPlayerParty(void)
 
         // Roll 1/Status Chance and apply the status if it's 0.
         // the status field is u32, so pack the 4 byte arg with the correct status
-        *(u32*)arg = (Random() % RUDE_STATUS_CHANCE_ON_HEAL)? STATUS1_NONE: status;
+        *(u32*)arg = (RandomOr(0) % RUDE_STATUS_CHANCE_ON_HEAL)? STATUS1_NONE: status;
         SetMonData(&gPlayerParty[i], MON_DATA_STATUS, arg);
     }
 }

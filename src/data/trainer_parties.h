@@ -3462,7 +3462,7 @@ static const struct TrainerMonItemCustomMoves sParty_Brawly1[] = {
     .iv = 200,
     .lvl = 18,
     .species = SPECIES_MAKUHITA,
-    .heldItem = ITEM_SITRUS_BERRY,
+    .heldItem = ITEM_NONE,
     .moves = {MOVE_FAKE_OUT, MOVE_VITAL_THROW, MOVE_REVERSAL, MOVE_BULK_UP}
     },
     {
@@ -6915,6 +6915,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRoute110Mudkip[] 
     .species = SPECIES_WINGULL,
     },
     {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
     .iv = 100,
     .lvl = 20,
     .species = SPECIES_GROVYLE,
@@ -6931,6 +6936,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRoute119Mudkip[] 
     .iv = 100,
     .lvl = 29,
     .species = SPECIES_PELIPPER,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_LOUDRED,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_SEVIPER,
     },
     {
     .iv = 150,
@@ -6959,6 +6974,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRoute110Treecko[]
     .species = SPECIES_LOMBRE,
     },
     {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
     .iv = 100,
     .lvl = 20,
     .species = SPECIES_COMBUSKEN,
@@ -6975,6 +6995,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRoute119Treecko[]
     .iv = 100,
     .lvl = 29,
     .species = SPECIES_LOMBRE,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_LOUDRED,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_SEVIPER,
     },
     {
     .iv = 150,
@@ -7003,6 +7033,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRoute110Torchic[]
     .species = SPECIES_SLUGMA,
     },
     {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
     .iv = 100,
     .lvl = 20,
     .species = SPECIES_MARSHTOMP,
@@ -7019,6 +7054,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRoute119Torchic[]
     .iv = 100,
     .lvl = 29,
     .species = SPECIES_SLUGMA,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_LOUDRED,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_SEVIPER,
     },
     {
     .iv = 150,
@@ -7047,6 +7092,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRoute110Mudkip[] = {
     .species = SPECIES_SLUGMA,
     },
     {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
     .iv = 100,
     .lvl = 20,
     .species = SPECIES_GROVYLE,
@@ -7063,6 +7113,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRoute119Mudkip[] = {
     .iv = 100,
     .lvl = 29,
     .species = SPECIES_LOMBRE,
+    },
+    {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
+    .iv = 50,
+    .lvl = 30,
+    .species = SPECIES_SEVIPER,
     },
     {
     .iv = 150,
@@ -7091,6 +7151,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRoute110Treecko[] = {
     .species = SPECIES_LOMBRE,
     },
     {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
     .iv = 100,
     .lvl = 20,
     .species = SPECIES_COMBUSKEN,
@@ -7107,6 +7172,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRoute119Treecko[] = {
     .iv = 100,
     .lvl = 29,
     .species = SPECIES_LOMBRE,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_LOUDRED,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_SEVIPER,
     },
     {
     .iv = 150,
@@ -7135,6 +7210,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRoute110Torchic[] = {
     .species = SPECIES_SLUGMA,
     },
     {
+    .iv = 50,
+    .lvl = 18,
+    .species = SPECIES_LOUDRED,
+    },
+    {
     .iv = 100,
     .lvl = 20,
     .species = SPECIES_MARSHTOMP,
@@ -7151,6 +7231,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRoute119Torchic[] = {
     .iv = 100,
     .lvl = 29,
     .species = SPECIES_SLUGMA,
+    },
+    {
+    .iv = 510,
+    .lvl = 30,
+    .species = SPECIES_LOUDRED,
+    },
+    {
+    .iv = 100,
+    .lvl = 30,
+    .species = SPECIES_SEVIPER,
     },
     {
     .iv = 150,
@@ -7954,6 +8044,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRustboroTreecko[]
     .species = SPECIES_LOTAD,
     },
     {
+    .iv = 25,
+    .lvl = 13,
+    .species = SPECIES_WHISMUR,
+    },
+    {
     .iv = 50,
     .lvl = 15,
     .species = SPECIES_TORCHIC,
@@ -7965,6 +8060,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRustboroMudkip[] 
     .iv = 25,
     .lvl = 13,
     .species = SPECIES_WINGULL,
+    },
+    {
+    .iv = 25,
+    .lvl = 13,
+    .species = SPECIES_WHISMUR,
     },
     {
     .iv = 50,
@@ -8055,6 +8155,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanRustboroTorchic[]
     .species = SPECIES_SLUGMA,
     },
     {
+    .iv = 25,
+    .lvl = 13,
+    .species = SPECIES_WHISMUR,
+    },
+    {
     .iv = 50,
     .lvl = 15,
     .species = SPECIES_MUDKIP,
@@ -8066,6 +8171,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRustboroMudkip[] = {
     .iv = 25,
     .lvl = 13,
     .species = SPECIES_WINGULL,
+    },
+    {
+    .iv = 25,
+    .lvl = 13,
+    .species = SPECIES_WHISMUR,
     },
     {
     .iv = 50,
@@ -8891,7 +9001,7 @@ static const struct TrainerMonNoItemCustomMoves sParty_WallyVR2[] = {
     .iv = 150,
     .lvl = 46,
     .species = SPECIES_DELCATTY,
-    .moves = {MOVE_SING, MOVE_ASSIST, MOVE_CHARM, MOVE_FAINT_ATTACK}
+    .moves = {MOVE_SING, MOVE_ASSIST, MOVE_CHARM, MOVE_DOUBLE_EDGE}
     },
     {
     .iv = 150,
@@ -8903,7 +9013,13 @@ static const struct TrainerMonNoItemCustomMoves sParty_WallyVR2[] = {
     .iv = 150,
     .lvl = 44,
     .species = SPECIES_MAGNETON,
-    .moves = {MOVE_SUPERSONIC, MOVE_THUNDERBOLT, MOVE_TRI_ATTACK, MOVE_SCREECH}
+    .moves = {MOVE_THUNDERBOLT, MOVE_TRI_ATTACK, MOVE_FLASH, MOVE_METAL_SOUND}
+    },
+    {
+    .iv = 150,
+    .lvl = 46,
+    .species = SPECIES_MILOTIC,
+    .moves = {MOVE_WATER_PULSE, MOVE_ICE_BEAM, MOVE_RECOVER, MOVE_TWISTER}
     },
     {
     .iv = 250,
@@ -9029,6 +9145,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanLilycoveMudkip[] 
     .species = SPECIES_PELIPPER,
     },
     {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_SEVIPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_EXPLOUD,
+    },
+    {
     .iv = 200,
     .lvl = 34,
     .species = SPECIES_GROVYLE,
@@ -9050,6 +9176,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanLilycoveTreecko[]
     .iv = 150,
     .lvl = 32,
     .species = SPECIES_LUDICOLO,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_SEVIPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_EXPLOUD,
     },
     {
     .iv = 200,
@@ -9075,6 +9211,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_BrendanLilycoveTorchic[]
     .species = SPECIES_SLUGMA,
     },
     {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_SEVIPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_EXPLOUD,
+    },
+    {
     .iv = 200,
     .lvl = 34,
     .species = SPECIES_MARSHTOMP,
@@ -9096,6 +9242,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayLilycoveMudkip[] = {
     .iv = 150,
     .lvl = 32,
     .species = SPECIES_PELIPPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_SEVIPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_EXPLOUD,
     },
     {
     .iv = 200,
@@ -9121,6 +9277,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayLilycoveTreecko[] = {
     .species = SPECIES_LUDICOLO,
     },
     {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_SEVIPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_EXPLOUD,
+    },
+    {
     .iv = 200,
     .lvl = 34,
     .species = SPECIES_COMBUSKEN,
@@ -9142,6 +9308,16 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayLilycoveTorchic[] = {
     .iv = 150,
     .lvl = 32,
     .species = SPECIES_SLUGMA,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_SEVIPER,
+    },
+    {
+    .iv = 150,
+    .lvl = 32,
+    .species = SPECIES_EXPLOUD,
     },
     {
     .iv = 200,
@@ -10413,6 +10589,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRustboroTreecko[] = {
     .species = SPECIES_LOTAD,
     },
     {
+    .iv = 25,
+    .lvl = 13,
+    .species = SPECIES_WHISMUR,
+    },
+    {
     .iv = 50,
     .lvl = 15,
     .species = SPECIES_TORCHIC,
@@ -10424,6 +10605,11 @@ static const struct TrainerMonNoItemDefaultMoves sParty_MayRustboroTorchic[] = {
     .iv = 25,
     .lvl = 13,
     .species = SPECIES_TORKOAL,
+    },
+    {
+    .iv = 25,
+    .lvl = 13,
+    .species = SPECIES_WHISMUR,
     },
     {
     .iv = 50,

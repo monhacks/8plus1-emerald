@@ -66,6 +66,8 @@
 #include "constants/songs.h"
 #include "constants/trainer_hill.h"
 #include "constants/weather.h"
+#include "party_menu.h"
+#include "constants/moves.h"
 
 struct CableClubPlayer
 {
@@ -970,6 +972,10 @@ bool32 Overworld_IsBikingAllowed(void)
 // Flash level of 8 is fully black
 void SetDefaultFlashLevel(void)
 {
+    // Use Flash Automatically
+    if(PlayerHasMove(MOVE_FLASH) && FlagGet(FLAG_BADGE02_GET))
+        FlagSet(FLAG_SYS_USE_FLASH);
+
     if (!gMapHeader.cave)
         gSaveBlock1Ptr->flashLevel = 0;
     else if (FlagGet(FLAG_SYS_USE_FLASH))

@@ -57,6 +57,7 @@ u16 GetOpeningSprite(void);
 
 u16 ReplaceWildMonSpecies(u16 oldSpecies, u16 levelID);
 u16 ReplaceLevelUpMove(u16 oldMove, u16 species);
+u16 ReplaceInitialMove(u16 oldMove, u16 species);
 
 const u8* GetNameOfObfuscatedMove(u16 moveID);
 bool8 IsMoveSilly(u16 moveID);

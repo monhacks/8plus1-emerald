@@ -7,6 +7,7 @@
 #include "string_util.h"
 #include "text.h"
 #include "pokemon_storage_system.h"
+#include "game_version.h"
 
 static EWRAM_DATA u16 sWinNumberDigit = 0;
 static EWRAM_DATA u16 sOtIdDigit = 0;
@@ -158,6 +159,25 @@ u32 GetLotteryNumber(void)
     u16 highNum = VarGet(VAR_POKELOT_RND1);
     u16 lowNum = VarGet(VAR_POKELOT_RND2);
 
+    // Unlucky players always win the lottery
+    if (GameVersionUnlucky())
+    {
+        // Search for and return the first OTID in the party, ignoring eggs (same code as PickLotteryCornerTicket)
+        u8 i = 0;
+        for (i = 0; i < PARTY_SIZE; i++)
+        {
+            struct Pokemon *mon = &gPlayerParty[i];
+            if (GetMonData(mon, MON_DATA_SPECIES) != SPECIES_NONE)
+            {
+                if (!GetMonData(mon, MON_DATA_IS_EGG))
+                    return GetMonData(mon, MON_DATA_OT_ID);
+            } 
+            else
+                break;
+        }
+    }
+
+    // Default Value
     return (lowNum << 16) | highNum;
 }
 

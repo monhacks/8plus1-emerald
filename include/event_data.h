@@ -27,6 +27,7 @@ u8 FlagSet(u16 id);
 u8 FlagClear(u16 id);
 bool8 FlagGet(u16 id);
 u16 GetLevelCap();
+u16 GetNumBadges();
 
 extern u16 gSpecialVar_0x8000;
 extern u16 gSpecialVar_0x8001;
@@ -46,9 +47,5 @@ extern u16 gSpecialVar_Facing;
 extern u16 gSpecialVar_MonBoxId;
 extern u16 gSpecialVar_MonBoxPos;
 extern u16 gSpecialVar_Unused_0x8014;
-
-#define NUM_LEVEL_CAPS 13
-extern const u16 sLevelCapFlags[NUM_LEVEL_CAPS];
-extern const u16 sLevelCaps[NUM_LEVEL_CAPS];
 
 #endif // GUARD_EVENT_DATA_H

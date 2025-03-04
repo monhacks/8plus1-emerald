@@ -312,20 +312,48 @@ u16 ReplaceWildMonSpecies(u16 oldSpecies, u16 levelID) {
     return oldSpecies;
 }
 
-// If Randomized mode is not active, this will just return oldMove.
-// If randomized mode is active, it will instead return a randomized level up move.
-// Note: level up movesets are consistent for pokemon species.
-u16 ReplaceLevelUpMove(u16 oldMove, u16 species) {
-    if (GameVersionRandom()) {
-        // MOVES_COUNT includes invalid moves MOVE_NONE (0) and STRUGGLE (165)
-        u16 move = 1 + (oldMove + (gSaveBlock2Ptr->playerTrainerId[0] * species)) % (MOVES_COUNT - 2);
-        
-        // Struggle is in the middle of the list, so we just shorten the range and pick the last move instead
-        if (move == MOVE_STRUGGLE)
-            move = MOVES_COUNT - 1;
+// Randomize a the given move for a pokemon species.
+// Note that, randomization will always be the same for each species.
+u16 RandomizeMove(u16 oldMove, u16 species) {
+    // MOVES_COUNT includes invalid moves MOVE_NONE (0) and STRUGGLE (165)
+    u16 move = 1 + (oldMove + (gSaveBlock2Ptr->playerTrainerId[0] * species)) % (MOVES_COUNT - 2);
+            
+    // Struggle is in the middle of the list, so we just shorten the range and pick the last move instead
+    if (move == MOVE_STRUGGLE)
+        move = MOVES_COUNT - 1;
 
-        return move;
-    }
+    return move;
+}
+
+// Replace a pokemon's level up move with one, per the current game version's settings. In order:
+// If Sketchy is active, it will return Sketch
+// If Hidden Power is active, it will return hidden power
+// If randomized mode is active, it will return a randomized level up move.
+// If none of the above are active this will just return oldMove.
+u16 ReplaceLevelUpMove(u16 oldMove, u16 species) {
+    if (GameVersionSketchy())
+        return MOVE_SKETCH;
+
+    else if (GameVersionHiddenPower())
+        return MOVE_HIDDEN_POWER;
+
+    else if (GameVersionRandom())
+        return RandomizeMove(oldMove, species);
+
+    return oldMove;
+}
+
+// Replace a pokemon's inital moveset move with a new one, per the current version's settings. In order:
+// If randomized mode is active, it will return a randomized level up move.
+// If Hidden Power is active, it will return hidden power
+// If none of the above are active this will just return oldMove.
+// Note that sketchy is ignored here, as that replacement only happens after a pokemon is caught.
+u16 ReplaceInitialMove(u16 oldMove, u16 species) {
+    if (GameVersionRandom())
+        return RandomizeMove(oldMove, species);
+    
+    else if (GameVersionHiddenPower())
+        return MOVE_HIDDEN_POWER;
 
     return oldMove;
 }
@@ -334,13 +362,10 @@ u16 ReplaceLevelUpMove(u16 oldMove, u16 species) {
 // Otherwise, it will sometimes return a silly name instead.
 // moveID - the id of the move who's name we wish to retrieve/obfuscate.
 const u8* GetNameOfObfuscatedMove(u16 moveID) {
-    if (GameVersionObfuscated()) {
+    if (GameVersionObfuscated() && IsMoveSilly(moveID)) {
         // The start of the "fake moves" replacement range
         u16 sillyMoves = 1 + (gSaveBlock2Ptr->playerTrainerId[1] % (MOVES_COUNT - NUM_FAKE_MOVES - 1));
-
-        // Check if we are in the "silly move" replacement block
-        if (sillyMoves <= moveID && moveID < (sillyMoves + NUM_FAKE_MOVES))
-            return FAKE_MOVE_NAMES[moveID - sillyMoves];
+        return FAKE_MOVE_NAMES[moveID - sillyMoves];
     }
     return gMoveNames[moveID];
 }
@@ -353,7 +378,7 @@ bool8 IsMoveSilly(u16 moveID) {
         u16 sillyMoves = 1 + (gSaveBlock2Ptr->playerTrainerId[1] % (MOVES_COUNT - NUM_FAKE_MOVES - 1));
 
         // Check if we are in the "silly move" replacement block
-        if(sillyMoves <= moveID && moveID < (sillyMoves + NUM_FAKE_MOVES))
+        if (sillyMoves <= moveID && moveID < (sillyMoves + NUM_FAKE_MOVES))
             return TRUE;
     }
     return FALSE;
@@ -400,24 +425,42 @@ u16 ObfuscateSpecies(u16 species) {
 }
 
 // Apply any potential level scaling to a trainer's pokemon.
-// If the game mode is not Rude, this will always return the original level.
-// Otherwise, it will scale the level for any non-boss trainers.
+// If the game mode is not Rude/Marathon, this will always return the original level.
+// Otherwise, it will scale the level based on the trainer and battle type
 // level - the original level of the pokemon
 // class - the trainer's class type
-u8 GetTrainerPokemonLevel(u8 level, u8 class) {
-    if (IsJumpscareBattle())
-        return GetLevelCap(); // Jumpscare trainers are always level cap
+u8 GetTrainerPokemonLevel(u8 level, u8 class) {    
+    u8 cap = GetLevelCap();
 
-    if (GameVersionRude() || GameVersionMarathon()) {
-        if (class != TRAINER_CLASS_ELITE_FOUR && class != TRAINER_CLASS_LEADER &&
-            class != TRAINER_CLASS_AQUA_ADMIN && class != TRAINER_CLASS_AQUA_LEADER &&
-            class != TRAINER_CLASS_MAGMA_ADMIN && class != TRAINER_CLASS_MAGMA_LEADER)
-            return (level * 1.2) + 3;
+    // Scale the level if game version supports it
+    if (GameVersionMarathon()) {
+        level = (level * 1.1) + 2;
+        cap += ((GetNumBadges() + 1) / 2);
+    }
+
+    // Scale more agressivley in hell mode
+    else if (GameVersionRude()) {
+        level = (level * 1.2) + 3;
+        cap += GetNumBadges() + 1;
     }
 
     // Rival is always at the level cap (after first battle)
     if (class == TRAINER_CLASS_RIVAL && level > 8)
-            return GetLevelCap();
+        return cap;
+
+    // Jumpscare trainers are always at least the level cap
+    if (IsJumpscareBattle() && level < cap)
+        level = cap; 
+
+    // Make sure boss trainers dont break the level cap
+    if ((level > cap) &&
+        (class == TRAINER_CLASS_ELITE_FOUR || class == TRAINER_CLASS_LEADER ||
+         class == TRAINER_CLASS_AQUA_ADMIN || class == TRAINER_CLASS_AQUA_LEADER ||
+         class == TRAINER_CLASS_MAGMA_ADMIN || class == TRAINER_CLASS_MAGMA_LEADER))
+            level = cap; // Cap gym leaders / e4 at the level caps
+
+    // Make sure we dont break the game's hard level cap
+    level = (level > MAX_LEVEL)? MAX_LEVEL: level;
 
     return level;
 }
@@ -435,7 +478,7 @@ u8 GetWildPokemonLevel(u8 level) {
 // Otherwise, will return a status appropriate to where the player is being healed.
 // mapID - the region map section id where the player got healed, or none if its a box retrieval. 
 u8 ShouldApplyStatusOnHeal(u8 mapID) {
-    if (GameVersionRude() || GameVersionUnlucky()) {
+    if (GameVersionRude()) {
         u8 i;
         for (i = 0; i < NUM_OVERWORLD_HEALS; ++i)
             if (NON_POKECENTER_HEALS[i] == mapID)
@@ -497,7 +540,8 @@ u16 RandomOr(u16 determinsticResult)
 
 // LOW PRIORITY:
 // Pokedex cries are probably double obfuscated
-// Test more unlucky mechanics
-// test obfuscated move relearner move names
-// Test Dad norman
-// Need to check like 30 other sprite menu locations (xcatch, wcontests, ?eggs, xevolutions, ?item use, ?move relearner)
+// Kyogre/Groudon cries are obfuscated in intro cutscene if you select guile/rainbow (might affect seeding?)
+
+// NEEDS TEST
+// Uncommon unlucky mechanics
+// Uncommon obfuscated sprite Locations (contests, eggs, move relearner)

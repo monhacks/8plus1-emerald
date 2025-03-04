@@ -22,6 +22,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/weather.h"
+#include "game_version.h"
 
 #define GOING_DOWN gSpecialVar_0x8004
 
@@ -878,7 +879,7 @@ static void CreateCableCarSprites(void)
     }
 
     // 1/64 chance for an NPC to appear hiking on the ground below the Cable Car
-    if ((rval % 64) == 0)
+    if ((rval % 64) == 0 || GameVersionUnlucky())
     {
         // BUGFIX: The - 1 in the below ARRAY_COUNT means the Zigzagoon is never used
 #ifdef BUGFIX

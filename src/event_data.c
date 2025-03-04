@@ -2,6 +2,7 @@
 #include "event_data.h"
 #include "pokedex.h"
 #include "constants/pokemon.h"
+#include "game_version.h"
 
 #define SPECIAL_FLAGS_SIZE  (NUM_SPECIAL_FLAGS / 8)  // 8 flags per byte
 #define TEMP_FLAGS_SIZE     (NUM_TEMP_FLAGS / 8)
@@ -30,7 +31,7 @@ EWRAM_DATA static u8 sSpecialFlags[SPECIAL_FLAGS_SIZE] = {0};
 
 extern u16 *const gSpecialVars[];
 
-
+#define NUM_LEVEL_CAPS 13
 const u16 sLevelCapFlags[NUM_LEVEL_CAPS] = {
     FLAG_BADGE01_GET, FLAG_BADGE02_GET, FLAG_BADGE03_GET, FLAG_BADGE04_GET,
     FLAG_BADGE05_GET, FLAG_BADGE06_GET, FLAG_BADGE07_GET, FLAG_BADGE08_GET,
@@ -249,12 +250,16 @@ bool8 FlagGet(u16 id)
 // Get the current level cap
 u16 GetLevelCap()
 {
-    u8 i;
-    for (i=0; i < NUM_LEVEL_CAPS; ++i)
-        // Search the flags until we find the first un-set one
-        if (!FlagGet(sLevelCapFlags[i]))
-            return sLevelCaps[i];
-
-    // All level caps reached, there is no more cap
-    return MAX_LEVEL;
+    u8 badges = GetNumBadges();
+    return (badges < NUM_LEVEL_CAPS)? sLevelCaps[badges]: MAX_LEVEL;
 }
+
+// Get the number of badges the player has acquired (including e4 members beaten)
+u16 GetNumBadges()
+{
+    // Search the flags until we find the first un-set one, then return it
+    u8 i = 0;
+    while (i < NUM_LEVEL_CAPS && FlagGet(sLevelCapFlags[i])) ++i;
+    return i;
+}
+

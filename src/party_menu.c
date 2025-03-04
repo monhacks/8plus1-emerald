@@ -4716,6 +4716,34 @@ bool8 MonKnowsMove(struct Pokemon *mon, u16 move)
     return FALSE;
 }
 
+// Ported from devolov's tutorial
+bool8 PlayerHasMove(u16 move)
+{
+    switch (move)
+    {
+        case MOVE_SECRET_POWER:
+            return CheckBagHasItem(ITEM_TM43, 1);
+        case MOVE_CUT:
+            return CheckBagHasItem(ITEM_HM01, 1);
+        case MOVE_FLY:
+            return CheckBagHasItem(ITEM_HM02, 1);
+        case MOVE_SURF:
+            return CheckBagHasItem(ITEM_HM03, 1);
+        case MOVE_STRENGTH:
+            return CheckBagHasItem(ITEM_HM04, 1);
+        case MOVE_FLASH:
+            return CheckBagHasItem(ITEM_HM05, 1);
+        case MOVE_ROCK_SMASH:
+            return CheckBagHasItem(ITEM_HM06, 1);
+        case MOVE_WATERFALL:
+            return CheckBagHasItem(ITEM_HM07, 1);
+        case MOVE_DIVE:
+            return CheckBagHasItem(ITEM_HM08, 1);
+        default:
+            return FALSE;
+    }
+}
+
 static void DisplayLearnMoveMessage(const u8 *str)
 {
     StringExpandPlaceholders(gStringVar4, str);
@@ -4970,7 +4998,8 @@ void ItemUseCB_RareCandy(u8 taskId, TaskFunc task)
     bool8 cannotUseEffect;
     u8 level = GetMonData(mon, MON_DATA_LEVEL);
 
-    if (level != MAX_LEVEL && !IsLevelCapped(level))
+    // Check if we are trying to use the rare candy item at the level cap
+    if (!(IsLevelCapped(level) && gSpecialVar_ItemId == ITEM_RARE_CANDIES))
     {
         BufferMonStatsToTaskData(mon, arrayPtr);
         cannotUseEffect = ExecuteTableBasedItemEffect_(gPartyMenu.slotId, *itemPtr, 0);
